@@ -19,6 +19,41 @@ const ImagePredictor = () => {
     q5: '', // මැලවීම
     q6: ''  // වර්ධනය අඩුවීම
   });
+  const [validationResult, setValidationResult] = useState<any>(null);
+  const [isValidating, setIsValidating] = useState(false);
+
+  // Rule-based disease prediction function
+  const predictDiseaseFromAnswers = (answers: any) => {
+    // Based on the dataset patterns, create rule-based logic
+    const { q1, q2, q21, q3, q4, q5, q6 } = answers;
+    
+    // Bacterial Blight rules
+    if (q1 === 'කහ' && q2 === 'ඔව්' && q21 === 'දුඹුරු' && q4 === 'ඔව්' && q5 === 'ඔව්') {
+      return 'Bacterial Blight';
+    }
+    
+    // Blast rules
+    if (q2 === 'ඔව්' && q21 === 'අළු' && q3 === 'ඕවලාකාර' && q4 === 'ඔව්') {
+      return 'Blast';
+    }
+    
+    // Brown Spot rules
+    if (q1 === 'දුඹුරු' && q2 === 'ඔව්' && q21 === 'දුඹුරු' && q3 === 'ඕවලාකාර') {
+      return 'Brown Spot';
+    }
+    
+    // Tungro rules
+    if (q1 === 'කහ' && q5 === 'ඔව්' && (q6 === 'ඔව්' || q6 === 'නැහැ')) {
+      return 'Tungro';
+    }
+    
+    // Healthy rules
+    if (q1 === 'කොළ' && q2 === 'නැහැ' && q4 === 'නැහැ' && q5 === 'නැහැ' && q6 === 'නැහැ') {
+      return 'Healthy';
+    }
+    
+    return 'Unknown';
+  };
 
   // Helper function to get confidence level color and text
   const getConfidenceInfo = (confidence: number) => {
@@ -362,6 +397,7 @@ const ImagePredictor = () => {
                                 <Form.Select 
                                   value={validationAnswers.q3}
                                   onChange={(e) => setValidationAnswers({...validationAnswers, q3: e.target.value})}
+                                   disabled={validationAnswers.q2 !== 'ඔව්'}
                                 >
                                   <option value="">තෝරන්න...</option>
                                   <option value="ඉරි">ඉරි</option>
@@ -413,23 +449,144 @@ const ImagePredictor = () => {
                             <Button 
                               variant="warning" 
                               size="lg"
-                              onClick={() => {
-                                // Handle validation submission
-                                console.log('Validation answers:', validationAnswers);
-                                // You can add logic here to send answers to backend for improved prediction
-                                alert('ඔබගේ පිළිතුරු සටහන් කර ගන්නා ලදි. ප්‍රතිඵලය වැඩිදියුණු කිරීම සඳහා භාවිතා කරනු ඇත.');
-                                setShowValidation(false);
+                              onClick={async () => {
+                                setIsValidating(true);
+                                
+                                // Get rule-based prediction
+                                const rulePrediction = predictDiseaseFromAnswers(validationAnswers);
+                                console.log('Rule-based prediction:', rulePrediction);
+                                console.log('AI prediction:', result.disease);
+                                
+                                // Compare predictions
+                                const aiDisease = result.disease.toLowerCase();
+                                const ruleDisease = rulePrediction.toLowerCase();
+                                
+                                let validationMessage = '';
+                                let isMatch = false;
+                                
+                                if (ruleDisease === aiDisease || 
+                                    (aiDisease.includes('brown spot') && ruleDisease.includes('brown spot')) ||
+                                    (aiDisease.includes('blast') && ruleDisease.includes('blast')) ||
+                                    (aiDisease.includes('bacterial') && ruleDisease.includes('bacterial')) ||
+                                    (aiDisease.includes('tungro') && ruleDisease.includes('tungro')) ||
+                                    (aiDisease.includes('healthy') && ruleDisease.includes('healthy'))) {
+                                  
+                                  isMatch = true;
+                                  validationMessage = `✅ තහවුරු කරන ලදි! | Confirmed!\n\nAI ප්‍රතිඵලය: ${result.disease}\nනීති පදනම් ප්‍රතිඵලය: ${rulePrediction}\n\nදෙකම එකම රෝගය පෙන්වයි. ප්‍රතිඵලය විශ්වාසදායකයි.`;
+                                } else {
+                                  validationMessage = `❌ නොගැලපේ | No Match!\n\nAI ප්‍රතිඵලය: ${result.disease}\nනීති පදනම් ප්‍රතිඵලය: ${rulePrediction}\n\nප්‍රතිඵල නොගැලපේ. කරුණාකර වෙනත් පැහැදිලි ඡායාරූපයක් උඩුගත කරන්න.`;
+                                }
+                                
+                                setValidationResult({
+                                  aiPrediction: result.disease,
+                                  rulePrediction: rulePrediction,
+                                  isMatch: isMatch,
+                                  message: validationMessage,
+                                  answers: validationAnswers
+                                });
+                                
+                                setIsValidating(false);
+                               
+                                
+                                if (isMatch) {
+                                  setShowValidation(false);
+                                }
                               }}
-                              disabled={!Object.values(validationAnswers).every(answer => answer !== '')}
+                              disabled={(() => {
+                                // Check if all required questions are answered
+                                const requiredAnswers = [validationAnswers.q1, validationAnswers.q4, validationAnswers.q5, validationAnswers.q6];
+                                const hasRequiredAnswers = requiredAnswers.every(answer => answer !== '');
+                                
+                                // Check if q2 is answered
+                                const hasQ2Answer = validationAnswers.q2 !== '';
+                                
+                                // If q2 is "ඔව්", then q21 and q3 are also required
+                                if (validationAnswers.q2 === 'ඔව්') {
+                                  const hasSpotAnswers = validationAnswers.q21 !== '' && validationAnswers.q3 !== '';
+                                  return !hasRequiredAnswers || !hasQ2Answer || !hasSpotAnswers || isValidating;
+                                }
+                                
+                                // If q2 is "නැහැ", q21 and q3 are not required
+                                return !hasRequiredAnswers || !hasQ2Answer || isValidating;
+                              })()}
                             >
-                              ✅ ප්‍රශ්නවලට පිළිතුරු ලබාදී තහවුරු කරන්න
+                              {isValidating ? (
+                                <>
+                                  <Spinner animation="border" size="sm" className="me-2" />
+                                  විශ්ලේෂණය කරමින්...
+                                </>
+                              ) : (
+                                '✅ ප්‍රශ්නවලට පිළිතුරු ලබාදී තහවුරු කරන්න'
+                              )}
                             </Button>
                             <div className="mt-2">
                               <small className="text-muted">
-                                සියලු ප්‍රශ්නවලට පිළිතුරු දීමෙන් පසු බොත්තම සක්‍රීය වේ
+                                {validationAnswers.q2 === 'නැහැ' 
+                                  ? 'ප්‍රධාන ප්‍රශ්න වලට පිළිතුරු දීමෙන් පසු බොත්තම සක්‍රීය වේ (2.1 සහ 3 අවශ්‍ය නැත)'
+                                  : validationAnswers.q2 === 'ඔව්'
+                                    ? 'සියලු ප්‍රශ්නවලට පිළිතුරු දීමෙන් පසු බොත්තම සක්‍රීය වේ'
+                                    : 'සියලු ප්‍රශ්නවලට පිළිතුරු දීමෙන් පසු බොත්තම සක්‍රීය වේ'
+                                }
                               </small>
                             </div>
                           </div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  </Row>
+                )}
+
+                {/* Validation Results */}
+                {validationResult && (
+                  <Row className="mt-4">
+                    <Col>
+                      <Card className="border-primary">
+                        <Card.Header className={`text-white ${validationResult.isMatch ? 'bg-success' : 'bg-warning'}`}>
+                          <h5 className="mb-0">
+                            {validationResult.isMatch ? '✅ සත්‍යාපන ප්‍රතිඵලය | Validation Result' : '⚠️ සත්‍යාපන ප්‍රතිඵලය | Validation Result'}
+                          </h5>
+                        </Card.Header>
+                        <Card.Body>
+                          <div className="row">
+                            <div className="col-md-6">
+                              <h6>🤖 AI ප්‍රතිඵලය | AI Prediction:</h6>
+                              <p className="text-primary fw-bold">{validationResult.aiPrediction}</p>
+                            </div>
+                            <div className="col-md-6">
+                              <h6>📋 නීති පදනම් ප්‍රතිඵලය | Rule-based Prediction:</h6>
+                              <p className="text-info fw-bold">{validationResult.rulePrediction}</p>
+                            </div>
+                          </div>
+                          
+                          <Alert variant={validationResult.isMatch ? 'success' : 'warning'} className="mt-3">
+                            <div style={{ whiteSpace: 'pre-line' }}>
+                              {validationResult.message}
+                            </div>
+                          </Alert>
+                          
+                          {!validationResult.isMatch && (
+                            <div className="text-center mt-3">
+                              <Button 
+                                variant="primary" 
+                                onClick={() => {
+                                  setResult(null);
+                                  setValidationResult(null);
+                                  setShowValidation(false);
+                                  setValidationAnswers({
+                                    q1: '',
+                                    q2: '',
+                                    q21: '',
+                                    q3: '',
+                                    q4: '',
+                                    q5: '',
+                                    q6: ''
+                                  });
+                                }}
+                              >
+                                🔄 නව ඡායාරූපයක් උඩුගත කරන්න | Upload New Image
+                              </Button>
+                            </div>
+                          )}
                         </Card.Body>
                       </Card>
                     </Col>
