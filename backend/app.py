@@ -89,20 +89,6 @@ def english_text_predict():
 
     return jsonify({"result": f"✅ Predicted Disease: {pred}\n✅ අනාවැකි රෝගය: {sinhala_pred}"})
 
-# @app.route('/text-predict', methods=['POST'])
-# def predict_text():
-#     data = request.get_json()
-#     input_text = data.get("input_text", "")
-    
-#     if not is_valid_symptom(input_text):
-#         return jsonify({"result": "❌ Input does not appear to describe symptoms. Please enter valid paddy leaf symptoms."})
-    
-#     vec = vectorizer.transform([input_text])
-#     pred = clf.predict(vec)[0]
-#     sinhala = disease_map.get(pred, "නොදන්නා රෝගයකි")
-    
-#     return jsonify({"result": f"✅ Predicted Disease: {pred}\n✅ අනාවැකි රෝගය: {sinhala}"})
-
 @app.route('/image-predict', methods=['POST'])
 def image_predict():
     file = request.files.get("file")

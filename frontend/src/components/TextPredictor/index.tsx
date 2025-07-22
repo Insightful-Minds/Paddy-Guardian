@@ -65,7 +65,7 @@ const TextDiseasePredictor = () => {
     >
       <Container>
         <Row className="justify-content-center">
-          <Col lg={10} xl={10}>
+           <Col lg={12} xl={12}>
             <Card className="shadow-lg border-0" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
               <Card.Header className="bg-info text-white text-center py-4">
                 <h2 className="mb-0">✍️ AI-Powered Symptom Analysis</h2>

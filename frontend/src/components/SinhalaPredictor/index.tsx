@@ -16,26 +16,17 @@ const SinhalaPredictor = () => {
                 input_text: input,
             });
 
-            console.log('🔤 Full Response:', res.data);
-
             // Extract the translated text from the result
             const result = res.data.result;
 
-            // Handle both success and error cases for translation
             let translatedText = 'Translation not found';
 
-            // First try to match the success format: "🌐 Translated: ..."
             const translatedMatch = result.match(/Translated:\s*(.+)/);
 
-            // If not found, try to match the error format: "\nTranslated: ..."
             if (translatedMatch) {
                 translatedText = translatedMatch[1];
             }
 
-            console.log('🔤 Translated English text:===>', translatedText);
-
-            // 🎯 Log the final result (Sinhala + English disease prediction)
-            console.log('🧠 Final Prediction Result:', result);
             setResult(result);
         } catch (err) {
             console.error(err);
@@ -59,7 +50,7 @@ const SinhalaPredictor = () => {
         >
             <Container>
                 <Row className="justify-content-center">
-                    <Col lg={10} xl={10}>
+                    <Col lg={12} xl={12}>
                         <Card className="shadow-lg border-0" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
                             <Card.Header className="bg-info text-white text-center py-4">
                                 <h2 className="mb-0">🌾 Sinhala Symptom Analysis</h2>
