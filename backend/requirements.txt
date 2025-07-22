@@ -5,3 +5,7 @@ joblib
 tensorflow
 numpy
 Pillow
+transformers
+peft
+accelerate
+sentencepiece
