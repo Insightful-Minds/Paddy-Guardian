@@ -5,15 +5,38 @@ import bgimg from '../../assets/bg-img.jpg';
 
 const ImagePredictor = () => {
   const [file, setFile] = useState<File | null>(null);
-  const [result, setResult] = useState('');
+  const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [showValidation, setShowValidation] = useState(false);
+  const [validationAnswers, setValidationAnswers] = useState({
+    q1: '', // පත්‍රයේ පැහැය
+    q2: '', // පත්‍රයේ ලප තිබේද
+    q21: '', // ලප වල පැහැය
+    q3: '', // තුවාල හැඩය
+    q4: '', // වියළීම
+    q5: '', // මැලවීම
+    q6: ''  // වර්ධනය අඩුවීම
+  });
+
+  // Helper function to get confidence level color and text
+  const getConfidenceInfo = (confidence: number) => {
+    if (confidence >= 90) {
+      return { color: 'success', text: 'Very High', emoji: '🟢' };
+    } else if (confidence >= 80) {
+      return { color: 'primary', text: 'High', emoji: '🔵' };
+    } else if (confidence > 70) {
+      return { color: 'warning', text: 'Medium', emoji: '🟡' };
+    } else {
+      return { color: 'danger', text: 'Low', emoji: '🔴' };
+    }
+  };
 
   const handleFileChange = (e: any) => {
     const selectedFile = e.target.files?.[0] || null;
     setFile(selectedFile);
-    setResult('');
+    setResult(null); // Reset to null
     setError('');
     
     if (selectedFile) {
@@ -39,14 +62,52 @@ const ImagePredictor = () => {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      console.log('Uploading file:', file);
 
       const response = await axios.post('http://localhost:5000/image-predict', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-      setResult(response.data.result);
+      console.log('Prediction response:', response.data);
+      
+      // Handle the response format and parse disease and confidence
+      if (response.data.error) {
+        setError(response.data.error);
+      } else if (response.data.result) {
+        // Parse the result string to extract disease and confidence
+        const resultString = response.data.result;
+        
+        // Extract disease name and confidence from the string format
+        // Format: "✅ Predicted Disease (Image): Disease Name (confidence%)"
+        const diseaseMatch = resultString.match(/: (.+?) \((\d+\.?\d*)%\)/);
+        
+        if (diseaseMatch) {
+          const parsedResult = {
+            disease: diseaseMatch[1], // Disease name
+            confidence: parseFloat(diseaseMatch[2]), // Confidence as number
+            message: resultString // Keep original message
+          };
+          console.log('Parsed result:', parsedResult);
+          setResult(parsedResult);
+          
+          // Show validation questions if confidence is below 35%
+          if (parsedResult.confidence < 70) {
+            setShowValidation(true);
+          } else {
+            setShowValidation(false);
+          }
+        } else {
+          // Fallback if parsing fails
+          console.log('Failed to parse result string:', resultString);
+          setResult({
+            disease: "Unknown",
+            confidence: 0,
+            message: resultString
+          });
+        }
+      } else {
+        setResult(response.data);
+      }
     } catch (err) {
       setError('Failed to analyze the image. Please try again. | රූපය විශ්ලේෂණය කිරීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.');
       console.error('Prediction error:', err);
@@ -57,9 +118,19 @@ const ImagePredictor = () => {
 
   const resetForm = () => {
     setFile(null);
-    setResult('');
+    setResult(null); // Reset to null
     setImagePreview(null);
     setError('');
+    setShowValidation(false);
+    setValidationAnswers({
+      q1: '',
+      q2: '',
+      q21: '',
+      q3: '',
+      q4: '',
+      q5: '',
+      q6: ''
+    });
   };
 
   return (
@@ -173,10 +244,48 @@ const ImagePredictor = () => {
                       {result && (
                         <Alert variant="success" className="text-center py-4">
                           <h4 className="mb-3">🎯 Analysis Results | විශ්ලේෂණ ප්‍රතිඵල</h4>
-                          <div className="bg-white rounded p-3 border">
-                            <h5 className="text-success mb-2">Disease Prediction | රෝග අනාවැකිය:</h5>
-                            <p className="h4 text-dark mb-0">{result}</p>
-                            <p className="text-muted mt-2 small">
+                          <div className="bg-white rounded p-4 border">
+                            <h5 className="text-success mb-3">Disease Prediction | රෝග අනාවැකිය:</h5>
+                            <p className="h3 text-dark mb-3">{result.disease || 'Unknown Disease'}</p>
+                            
+                            {/* Confidence Display - only show if confidence exists */}
+                            {result.confidence !== undefined && result.confidence > 0 && (
+                              <div className="mb-3">
+                                <h6 className="text-primary mb-2">Confidence Level | විශ්වාස මට්ටම:</h6>
+                                <div className="d-flex justify-content-center align-items-center mb-3">
+                                  <span className={`badge bg-${getConfidenceInfo(result.confidence).color} fs-6 me-3`}>
+                                    {getConfidenceInfo(result.confidence).emoji} {result.confidence}%
+                                  </span>
+                                  <span className={`text-${getConfidenceInfo(result.confidence).color} fw-bold`}>
+                                    {getConfidenceInfo(result.confidence).text} Confidence
+                                  </span>
+                                </div>
+                                
+                                {/* Confidence Progress Bar */}
+                                <div className="progress mb-3" style={{ height: '25px' }}>
+                                  <div 
+                                    className={`progress-bar bg-${getConfidenceInfo(result.confidence).color}`}
+                                    role="progressbar" 
+                                    style={{ width: `${result.confidence}%` }}
+                                    aria-valuenow={result.confidence} 
+                                    aria-valuemin={0} 
+                                    aria-valuemax={100}
+                                  >
+                                    {result.confidence}%
+                                  </div>
+                                </div>
+                                
+                                {/* Confidence Interpretation in Sinhala */}
+                                <div className="text-muted small">
+                                  {result.confidence >= 90 && "ඉතා ඉහළ විශ්වාසය - ප්‍රතිඵලය ඉතා විශ්වාසදායකයි"}
+                                  {result.confidence >= 80 && result.confidence < 90 && "ඉහළ විශ්වාසය - ප්‍රතිඵලය විශ්වාසදායකයි"}
+                                  {result.confidence > 70 && result.confidence < 75 && "මධ්‍යම විශ්වාසය - අමතර තහවුරුකිරීම සුදුසුයි"}
+                                  {result.confidence < 60 && "අඩු විශ්වාසය - වෙනත් ඡායාරූපයක් උත්සාහ කරන්න"}
+                                </div>
+                              </div>
+                            )}
+                            
+                            <p className="text-muted mt-3 small">
                               Based on AI analysis of the uploaded image | උඩුගත කරන ලද රූපයේ AI විශ්ලේෂණය මත පදනම්ව
                             </p>
                           </div>
@@ -190,6 +299,139 @@ const ImagePredictor = () => {
                           <span className="small">කරුණාකර නැවත උත්සාහ කරන්න | Please try again</span>
                         </Alert>
                       )}
+                    </Col>
+                  </Row>
+                )}
+
+                {/* Validation Questions - Show when confidence is below 35% */}
+                {showValidation && result && result.confidence < 70 && (
+                  <Row className="mt-4">
+                    <Col>
+                      <Card className="border-warning">
+                        <Card.Header className="bg-warning text-dark">
+                          <h5 className="mb-0">🔍 අමතර තහවුරුකිරීම | Additional Validation</h5>
+                          <p className="mb-0 small">විශ්වාස මට්ටම අඩු නිසා කරුණාකර මෙම ප්‍රශ්න වලට පිළිතුරු දෙන්න</p>
+                        </Card.Header>
+                        <Card.Body className="p-4">
+                          <Row>
+                            <Col md={6}>
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">1. පත්‍රයේ පැහැය කුමක්ද?</Form.Label>
+                                <Form.Select 
+                                  value={validationAnswers.q1}
+                                  onChange={(e) => setValidationAnswers({...validationAnswers, q1: e.target.value})}
+                                >
+                                  <option value="">තෝරන්න...</option>
+                                  <option value="දුඹුරු">දුඹුරු</option>
+                                  <option value="කොළ">කොළ</option>
+                                  <option value="කහ">කහ</option>
+                                </Form.Select>
+                              </Form.Group>
+
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">2. පත්‍රයේ ලප තිබේද?</Form.Label>
+                                <Form.Select 
+                                  value={validationAnswers.q2}
+                                  onChange={(e) => setValidationAnswers({...validationAnswers, q2: e.target.value})}
+                                >
+                                  <option value="">තෝරන්න...</option>
+                                  <option value="ඔව්">ඔව්</option>
+                                  <option value="නැහැ">නැහැ</option>
+                                </Form.Select>
+                              </Form.Group>
+
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">2.1. ලප වල පැහැය කුමක්ද?</Form.Label>
+                                <Form.Select 
+                                  value={validationAnswers.q21}
+                                  onChange={(e) => setValidationAnswers({...validationAnswers, q21: e.target.value})}
+                                  disabled={validationAnswers.q2 !== 'ඔව්'}
+                                >
+                                  <option value="">තෝරන්න...</option>
+                                  <option value="දුඹුරු">දුඹුරු</option>
+                                  <option value="අළු">අළු</option>
+                                  <option value="සුදු">සුදු</option>
+                                  <option value="නැත">නැත</option>
+                                </Form.Select>
+                              </Form.Group>
+                            </Col>
+                            
+                            <Col md={6}>
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">3. පත්‍රවල තුවාල හැඩය</Form.Label>
+                                <Form.Select 
+                                  value={validationAnswers.q3}
+                                  onChange={(e) => setValidationAnswers({...validationAnswers, q3: e.target.value})}
+                                >
+                                  <option value="">තෝරන්න...</option>
+                                  <option value="ඉරි">ඉරි</option>
+                                  <option value="ඕවලාකාර">ඕවලාකාර</option>
+                                  <option value="අක්‍රමවත්">අක්‍රමවත්</option>
+                                  <option value="නැත">නැත</option>
+                                </Form.Select>
+                              </Form.Group>
+
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">4. පත්‍රය වියළීමක් පෙන්වයිද?</Form.Label>
+                                <Form.Select 
+                                  value={validationAnswers.q4}
+                                  onChange={(e) => setValidationAnswers({...validationAnswers, q4: e.target.value})}
+                                >
+                                  <option value="">තෝරන්න...</option>
+                                  <option value="ඔව්">ඔව්</option>
+                                  <option value="නැහැ">නැහැ</option>
+                                </Form.Select>
+                              </Form.Group>
+
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">5. පත්‍රය මැලවීමක් පෙන්වයිද?</Form.Label>
+                                <Form.Select 
+                                  value={validationAnswers.q5}
+                                  onChange={(e) => setValidationAnswers({...validationAnswers, q5: e.target.value})}
+                                >
+                                  <option value="">තෝරන්න...</option>
+                                  <option value="ඔව්">ඔව්</option>
+                                  <option value="නැහැ">නැහැ</option>
+                                </Form.Select>
+                              </Form.Group>
+
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">6. පත්‍රය වර්ධනය අඩු වීමක් පෙන්වයිද?</Form.Label>
+                                <Form.Select 
+                                  value={validationAnswers.q6}
+                                  onChange={(e) => setValidationAnswers({...validationAnswers, q6: e.target.value})}
+                                >
+                                  <option value="">තෝරන්න...</option>
+                                  <option value="ඔව්">ඔව්</option>
+                                  <option value="නැහැ">නැහැ</option>
+                                </Form.Select>
+                              </Form.Group>
+                            </Col>
+                          </Row>
+                          
+                          <div className="text-center mt-4">
+                            <Button 
+                              variant="warning" 
+                              size="lg"
+                              onClick={() => {
+                                // Handle validation submission
+                                console.log('Validation answers:', validationAnswers);
+                                // You can add logic here to send answers to backend for improved prediction
+                                alert('ඔබගේ පිළිතුරු සටහන් කර ගන්නා ලදි. ප්‍රතිඵලය වැඩිදියුණු කිරීම සඳහා භාවිතා කරනු ඇත.');
+                                setShowValidation(false);
+                              }}
+                              disabled={!Object.values(validationAnswers).every(answer => answer !== '')}
+                            >
+                              ✅ ප්‍රශ්නවලට පිළිතුරු ලබාදී තහවුරු කරන්න
+                            </Button>
+                            <div className="mt-2">
+                              <small className="text-muted">
+                                සියලු ප්‍රශ්නවලට පිළිතුරු දීමෙන් පසු බොත්තම සක්‍රීය වේ
+                              </small>
+                            </div>
+                          </div>
+                        </Card.Body>
+                      </Card>
                     </Col>
                   </Row>
                 )}

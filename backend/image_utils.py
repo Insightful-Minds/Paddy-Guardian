@@ -42,13 +42,20 @@ def predict_from_image(file_storage):
         
         # Check if class_idx is within bounds
         if class_idx >= len(class_names):
-            return f"❌ Error: Predicted class index {class_idx} is out of range. Available classes: {len(class_names)}"
+            return {
+                "error": f"Predicted class index {class_idx} is out of range. Available classes: {len(class_names)}"
+            }
         
         if len(class_names) == 0:
-            return "❌ Error: No class names loaded"
+            return {"error": "No class names loaded"}
 
-        return f"✅ Predicted Disease (Image): {class_names[class_idx]} ({confidence}%)"
+        # Return structured data with disease name and confidence
+        return {
+            "disease": class_names[class_idx],
+            "confidence": confidence,
+            "message": f"✅ Predicted Disease (Image): {class_names[class_idx]} ({confidence}%)"
+        }
     
     except Exception as e:
-        return f"❌ Prediction failed: {str(e)}"
+        return {"error": f"Prediction failed: {str(e)}"}
 

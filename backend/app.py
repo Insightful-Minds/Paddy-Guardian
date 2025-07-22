@@ -96,7 +96,13 @@ def image_predict():
         return jsonify({"error": "No file uploaded."})
     try:
         prediction = predict_from_image(file)
-        return jsonify({"result": prediction})
+        
+        # Check if prediction contains an error
+        if isinstance(prediction, dict) and "error" in prediction:
+            return jsonify({"error": prediction["error"]})
+        
+        # Return the structured prediction data
+        return jsonify(prediction)
     except Exception as e:
         return jsonify({"error": f"Prediction failed: {str(e)}"})
 
