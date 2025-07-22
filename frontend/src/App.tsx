@@ -4,6 +4,7 @@ import Home from './components/Home';
 import ImagePredictor from './components/ImagePredictor';
 import TextPredictor from './components/TextPredictor';
 import { Container, Navbar, Nav } from 'react-bootstrap';
+import SinhalaPredictor from './components/SinhalaPredictor';
 
 function App() {
 
@@ -16,6 +17,7 @@ function App() {
             <Nav.Link as={NavLink} to="/">Home</Nav.Link>
             <Nav.Link as={NavLink} to="/image">Image Prediction</Nav.Link>
             <Nav.Link as={NavLink} to="/text">Text Prediction</Nav.Link>
+            <Nav.Link as={NavLink} to="/sinhala">Sinhala Prediction</Nav.Link>
           </Nav>
         </Container>
       </Navbar>
@@ -25,6 +27,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/image" element={<ImagePredictor />} />
           <Route path="/text" element={<TextPredictor />} />
+          <Route path="/sinhala" element={<SinhalaPredictor />} />
         </Routes>
       </div>
     </>

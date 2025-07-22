@@ -3,6 +3,9 @@ from flask_cors import CORS
 from image_utils import predict_from_image
 import joblib
 import os
+# Translation-related imports
+from transformers import MBart50TokenizerFast, MBartForConditionalGeneration
+from peft import PeftModel
 
 # Load model and vectorizer
 clf = joblib.load("./model/symptom_model.pkl")
@@ -21,6 +24,21 @@ def is_valid_symptom(text):
     keywords = ["yellow", "brown", "spot", "wilt", "leaf", "tip", "dry", "patch", "streak", "rot", "lesion"]
     return sum(1 for word in keywords if word in text.lower()) >= 2
 
+# Load translation model (LoRA adapter)
+print("🔁 Loading translation model...")
+tokenizer = MBart50TokenizerFast.from_pretrained("facebook/mbart-large-50-many-to-many-mmt")
+tokenizer.src_lang = "si_LK"
+tokenizer.tgt_lang = "en_XX"
+base_model = MBartForConditionalGeneration.from_pretrained("facebook/mbart-large-50-many-to-many-mmt")
+translator = PeftModel.from_pretrained(base_model, "model")  # adapter_model.safetensors and config must be in /model
+print("✅ Translator loaded.")
+
+def translate_sinhala_to_english(text):
+    inputs = tokenizer(text, return_tensors="pt", padding=True)
+    generated_ids = translator.generate(**inputs, forced_bos_token_id=tokenizer.lang_code_to_id["en_XX"])
+    translated = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
+    return translated[0]
+
 # Flask app
 app = Flask(__name__)
 CORS(app)
@@ -29,19 +47,61 @@ CORS(app)
 def home():
     return "✅ Paddy Disease Text Prediction API Running"
 
+# Sinhala → English → Disease Prediction
+@app.route('/sinhala-text-predict', methods=['POST'])
+def sinhala_text_predict():
+    data = request.get_json()
+    sinhala_text = data.get("input_text", "").strip()
+
+    if not sinhala_text:
+        return jsonify({"result": "❌ හිස් ඉන්පุตයක්. කරුණාකර රෝග ලක්ෂණ ඇතුළත් කරන්න."})
+
+    english_text = translate_sinhala_to_english(sinhala_text)
+    print("🔁 Translated:", english_text)
+
+    if not is_valid_symptom(english_text):
+        return jsonify({"result": f"❌ This input doesn't appear to describe symptoms (after translation).\nTranslated: {english_text}"})
+
+    vec = vectorizer.transform([english_text])
+    pred = clf.predict(vec)[0]
+    sinhala_pred = disease_map.get(pred, "නොදන්නා රෝගයකි")
+
+    result = (
+        f"🈁 Sinhala Input: {sinhala_text}\n"
+        f"🌐 Translated: {english_text}\n"
+        f"✅ Predicted Disease: {pred}\n"
+        f"✅ අනාවැකි රෝගය: {sinhala_pred}"
+    )
+
+    return jsonify({"result": result})
+
 @app.route('/text-predict', methods=['POST'])
-def predict_text():
+def english_text_predict():
     data = request.get_json()
     input_text = data.get("input_text", "")
-    
+
     if not is_valid_symptom(input_text):
         return jsonify({"result": "❌ Input does not appear to describe symptoms. Please enter valid paddy leaf symptoms."})
-    
+
     vec = vectorizer.transform([input_text])
     pred = clf.predict(vec)[0]
-    sinhala = disease_map.get(pred, "නොදන්නා රෝගයකි")
+    sinhala_pred = disease_map.get(pred, "නොදන්නා රෝගයකි")
+
+    return jsonify({"result": f"✅ Predicted Disease: {pred}\n✅ අනාවැකි රෝගය: {sinhala_pred}"})
+
+# @app.route('/text-predict', methods=['POST'])
+# def predict_text():
+#     data = request.get_json()
+#     input_text = data.get("input_text", "")
     
-    return jsonify({"result": f"✅ Predicted Disease: {pred}\n✅ අනාවැකි රෝගය: {sinhala}"})
+#     if not is_valid_symptom(input_text):
+#         return jsonify({"result": "❌ Input does not appear to describe symptoms. Please enter valid paddy leaf symptoms."})
+    
+#     vec = vectorizer.transform([input_text])
+#     pred = clf.predict(vec)[0]
+#     sinhala = disease_map.get(pred, "නොදන්නා රෝගයකි")
+    
+#     return jsonify({"result": f"✅ Predicted Disease: {pred}\n✅ අනාවැකි රෝගය: {sinhala}"})
 
 @app.route('/image-predict', methods=['POST'])
 def image_predict():
