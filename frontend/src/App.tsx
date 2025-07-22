@@ -10,15 +10,28 @@ function App() {
 
   return (
     <>
-      <Navbar bg="light" variant="light" expand="lg">
+      <Navbar bg="dark" variant="dark" expand="lg" className="shadow-sm">
         <Container className='d-flex justify-content-between align-items-center'>
-          <Navbar.Brand as={NavLink} to="/"><h2>🌾Paddy Disease App</h2></Navbar.Brand>
-          <Nav className="ms-auto">
-            <Nav.Link as={NavLink} to="/">Home</Nav.Link>
-            <Nav.Link as={NavLink} to="/image">Image Prediction</Nav.Link>
-            <Nav.Link as={NavLink} to="/text">Text Prediction</Nav.Link>
-            <Nav.Link as={NavLink} to="/sinhala">Sinhala Prediction</Nav.Link>
-          </Nav>
+          <Navbar.Brand as={NavLink} to="/" className="fw-bold">
+            <h2 className="mb-0">🌾 Paddy Guardian</h2>
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse id="basic-navbar-nav">
+            <Nav className="ms-auto">
+              <Nav.Link as={NavLink} to="/" className="mx-2" style={{ fontSize: '0.9rem' }}>
+                🏠 Home | මුල් පිටුව
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/image" className="mx-2" style={{ fontSize: '0.9rem' }}>
+                📷 Image Analysis | රූප විශ්ලේෂණය
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/text" className="mx-2" style={{ fontSize: '0.9rem' }}>
+                📝 English Text | ඉංග්‍රීසි පෙළ
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/sinhala" className="mx-2" style={{ fontSize: '0.9rem' }}>
+                🇱🇰 Sinhala Text | සිංහල පෙළ
+              </Nav.Link>
+            </Nav>
+          </Navbar.Collapse>
         </Container>
       </Navbar>
 
