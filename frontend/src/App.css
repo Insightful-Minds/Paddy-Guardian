@@ -1,0 +1,15 @@
+/* index.css or App.css */
+
+/* html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+} */
+
+body {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  background-color: #f0f8ff;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+}
