@@ -1,37 +1,3 @@
-# from tensorflow.keras.models import load_model
-# from tensorflow.keras.preprocessing import image
-# import numpy as np
-# import os
-
-# # Load model
-# model = load_model("model/mobilenet_finetuned.h5")
-
-# # Load class names
-# with open("model/class_names.txt", "r") as f:
-#     class_names = [line.strip() for line in f.readlines()]
-
-# def predict_from_image(file):
-#     img = image.load_img(file, target_size=(224, 224))  # Use same size as during training
-#     img_array = image.img_to_array(img) / 255.0
-#     img_array = np.expand_dims(img_array, axis=0)
-
-#     preds = model.predict(img_array)
-#     class_idx = np.argmax(preds)
-#     confidence = round(float(np.max(preds)) * 100, 2)
-
-#     return f"✅ Predicted Disease (Image): {class_names[class_idx]} ({confidence}%)"
-# def predict_from_image(file_storage):
-#     # 👇 FIX: Use file_storage.stream instead of raw file
-#     img = image.load_img(file_storage.stream, target_size=(224, 224))
-#     img_array = image.img_to_array(img) / 255.0
-#     img_array = np.expand_dims(img_array, axis=0)
-
-#     preds = model.predict(img_array)
-#     class_idx = np.argmax(preds)
-#     confidence = round(float(np.max(preds)) * 100, 2)
-
-#     return f"✅ Predicted Disease (Image): {class_names[class_idx]} ({confidence}%)"
-
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 import numpy as np
