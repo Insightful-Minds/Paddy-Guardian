@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from image_utils import predict_from_image
 import joblib
 import os
 
@@ -42,6 +43,17 @@ def predict_text():
     
     return jsonify({"result": f"✅ Predicted Disease: {pred}\n✅ අනාවැකි රෝගය: {sinhala}"})
 
+@app.route('/image-predict', methods=['POST'])
+def image_predict():
+    file = request.files.get("file")
+    if not file:
+        return jsonify({"error": "No file uploaded."})
+    try:
+        prediction = predict_from_image(file)
+        return jsonify({"result": prediction})
+    except Exception as e:
+        return jsonify({"error": f"Prediction failed: {str(e)}"})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+

@@ -39,6 +39,7 @@ const ImagePredictor = () => {
     try {
       const formData = new FormData();
       formData.append('file', file);
+      console.log('Uploading file:', file);
 
       const response = await axios.post('http://localhost:5000/image-predict', formData, {
         headers: {

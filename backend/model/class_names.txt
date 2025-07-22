@@ -1,0 +1,1 @@
+classes = ["Bacterial Blight", "Blast", "Brown Spot", "Tungro", "Healthy"]

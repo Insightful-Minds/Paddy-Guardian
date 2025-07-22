@@ -2,3 +2,6 @@ flask
 flask-cors
 scikit-learn
 joblib
+tensorflow
+numpy
+Pillow
