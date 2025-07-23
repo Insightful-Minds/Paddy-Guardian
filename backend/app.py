@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 from image_utils import predict_from_image
 import joblib
@@ -41,13 +41,98 @@ def translate_sinhala_to_english(text):
 
 # Flask app
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'], 
+     allow_headers=['Content-Type', 'Authorization'], 
+     methods=['GET', 'POST', 'OPTIONS'])
 
 @app.route('/')
 def home():
     return "✅ Paddy Disease Text Prediction API Running"
 
 # Sinhala → English → Disease Prediction
+# Enhanced chatbot endpoint with detailed analysis
+@app.route('/chatbot-predict', methods=['POST', 'OPTIONS'])
+def chatbot_predict():
+    # Handle preflight OPTIONS request
+    if request.method == 'OPTIONS':
+        response = make_response()
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+        return response
+    
+    data = request.get_json()
+    input_text = data.get("input_text", "").strip()
+    is_sinhala = data.get("is_sinhala", False)
+
+    if not input_text:
+        return jsonify({
+            "error": "Empty input",
+            "message": "❌ හිස් ඉන්පුතයක්. කරුණාකර රෝග ලක්ෂණ ඇතුළත් කරන්න.\nEmpty input. Please enter disease symptoms."
+        })
+
+    try:
+        # Translation if needed
+        english_text = input_text
+        translation = None
+        
+        if is_sinhala:
+            english_text = translate_sinhala_to_english(input_text)
+            translation = english_text
+            print(f"🔁 Translated: {input_text} -> {english_text}")
+
+        # Validation
+        if not is_valid_symptom(english_text):
+            return jsonify({
+                "error": "Invalid symptoms",
+                "message": f"❌ මෙම ඉන්පුතය රෝග ලක්ෂණ විස්තර නොකරයි.\nThis input doesn't appear to describe symptoms.",
+                "translation": translation,
+                "confidence": 0
+            })
+
+        # Prediction
+        vec = vectorizer.transform([english_text])
+        pred = clf.predict(vec)[0]
+        confidence_scores = clf.predict_proba(vec)[0]
+        max_confidence = float(max(confidence_scores) * 100)
+        
+        sinhala_pred = disease_map.get(pred, "නොදන්නා රෝගයකි")
+
+        # Symptom analysis
+        symptoms_found = []
+        symptom_keywords = {
+            "color": ["yellow", "brown", "black", "white", "gray", "green"],
+            "spots": ["spot", "patch", "lesion", "mark"],
+            "shape": ["circular", "oval", "diamond", "irregular", "round"],
+            "texture": ["dry", "wet", "wilted", "crispy", "soft"],
+            "severity": ["severe", "mild", "spreading", "small", "large"]
+        }
+        
+        for category, keywords in symptom_keywords.items():
+            found = [kw for kw in keywords if kw in english_text.lower()]
+            if found:
+                symptoms_found.append(f"{category}: {', '.join(found)}")
+
+        return jsonify({
+            "success": True,
+            "disease": pred,
+            "disease_sinhala": sinhala_pred,
+            "confidence": round(max_confidence, 2),
+            "translation": translation,
+            "symptoms_identified": symptoms_found,
+            "original_text": input_text,
+            "processed_text": english_text,
+            "message": f"✅ හඳුනාගත් රෝගය: {sinhala_pred}\n✅ Predicted Disease: {pred}\n📊 විශ්වාසය: {max_confidence:.1f}%"
+        })
+
+    except Exception as e:
+        print(f"❌ Error in chatbot prediction: {str(e)}")
+        return jsonify({
+            "error": "Processing failed",
+            "message": "❌ සැකසීමේදී දෝෂයක් ඇතිවිය. කරුණාකර නැවත උත්සාහ කරන්න.\nProcessing failed. Please try again.",
+            "confidence": 0
+        })
+
 @app.route('/sinhala-text-predict', methods=['POST'])
 def sinhala_text_predict():
     data = request.get_json()
