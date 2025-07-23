@@ -293,7 +293,7 @@ const TextDiseasePredictor = () => {
   // Treatment suggestions based on disease
   const getTreatmentSuggestions = (disease: string): string => {
     const treatments: { [key: string]: string } = {
-      'Blast': '• දිලීර නාශක ඉස්කරන්න\n• ජලය කළමනාකරණය\n• ප්‍රතිරෝධී ප්‍රභේද භාවිතා කරන්න',
+      'Blast': '• දිලීර නාශක ඉසින්න\n• ජලය කළමනාකරණය කරන්න\n• ප්‍රතිරෝධී ප්‍රභේද භාවිතා කරන්න',
       'Bacterial Blight': '• තඹ පදනම් ඔවදන භාවිතා කරන්න\n• ක්ෂේත්‍රය වියළි තබන්න\n• සනීපාරක්ෂක පියවර ගන්න',
       'Brown Spot': '• සේන්ද්‍රීය පස් අඩු කරන්න\n• ක්ෂේත්‍රය පිරිසිදු තබන්න\n• දිලීර නාශක ඉස්කරන්න',
       'Tungro': '• ආසාදිත පැල් ඉවත් කරන්න\n• පළිබෝධ කෙරෙහි අවධානය\n• නව බීජ භාවිතා කරන්න'
