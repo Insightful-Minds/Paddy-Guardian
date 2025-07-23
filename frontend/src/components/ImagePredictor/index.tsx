@@ -247,35 +247,76 @@ const ImagePredictor = () => {
       });
       console.log('Prediction response:', response.data);
       
-      // Handle the response format and parse disease and confidence
+      // Handle the response format - now using structured JSON response
       if (response.data.error) {
         setError(response.data.error);
-      } else if (response.data.result) {
-        // Parse the result string to extract disease and confidence
-        const resultString = response.data.result;
+      } else if (response.data.confidence !== undefined && response.data.disease) {
+        // New structured response format with confidence, disease, and message fields
+        const confidence = response.data.confidence;
+        const disease = response.data.disease;
+        const message = response.data.message;
         
-        // Extract disease name and confidence from the string format
-        // Format: "✅ Predicted Disease (Image): Disease Name (confidence%)"
-        const diseaseMatch = resultString.match(/: (.+?) \((\d+\.?\d*)%\)/);
+        console.log('Disease detected:', disease);
+        console.log('Confidence level:', confidence);
         
-        if (diseaseMatch) {
+        // If confidence is less than 40%, don't show disease prediction
+        if (confidence < 40) {
+          console.log('Low confidence detected:', confidence);
           const parsedResult = {
-            disease: diseaseMatch[1], // Disease name
-            confidence: parseFloat(diseaseMatch[2]), // Confidence as number
-            message: resultString // Keep original message
+            disease: "Cannot identify disease", // Don't show actual disease
+            confidence: confidence,
+            message: "Cannot identify a disease. Please upload separate image. | රෝගයක් හඳුනාගත නොහැක. කරුණාකර වෙනත් ඡායාරූපයක් උඩුගත කරන්න.",
+            lowConfidence: true // Flag to indicate low confidence
+          };
+          console.log('Low confidence result:', parsedResult);
+          setResult(parsedResult);
+          setShowValidation(false);
+        } else {
+          const parsedResult = {
+            disease: disease, // Disease name from response
+            confidence: confidence, // Confidence as number from response
+            message: message, // Message from response
+            originalDisease: disease // Keep original disease for validation comparison
           };
           console.log('Parsed result:', parsedResult);
           setResult(parsedResult);
           
-          // Show validation questions if confidence is below 35%
-          if (parsedResult.confidence < 70) {
+          // Show validation questions if confidence is below 70%
+          if (confidence < 70) {
             setShowValidation(true);
           } else {
             setShowValidation(false);
           }
+        }
+      } else if (response.data.result) {
+        // Fallback for old string format (backward compatibility)
+        const resultString = response.data.result;
+        console.log('Using fallback parsing for result string:', resultString);
+        
+        // Extract disease name and confidence from the string format
+        const diseaseMatch = resultString.match(/: (.+?) \((\d+\.?\d*)%\)/);
+        if (diseaseMatch) {
+          const confidence = parseFloat(diseaseMatch[2]);
+          const disease = diseaseMatch[1];
+          
+          if (confidence < 40) {
+            setResult({
+              disease: "Cannot identify disease",
+              confidence: confidence,
+              message: "Cannot identify a disease. Please upload separate image. | රෝගයක් හඳුනාගත නොහැක. කරුණාකර වෙනත් ඡායාරූපයක් උඩුගත කරන්න.",
+              lowConfidence: true
+            });
+            setShowValidation(false);
+          } else {
+            setResult({
+              disease: disease,
+              confidence: confidence,
+              message: resultString,
+              originalDisease: disease
+            });
+            setShowValidation(confidence < 70);
+          }
         } else {
-          // Fallback if parsing fails
-          console.log('Failed to parse result string:', resultString);
           setResult({
             disease: "Unknown",
             confidence: 0,
@@ -419,14 +460,32 @@ const ImagePredictor = () => {
                   <Row className="mt-4">
                     <Col>
                       {result && (
-                        <Alert variant="success" className="text-center py-4">
+                        <Alert variant={result.lowConfidence ? "warning" : "success"} className="text-center py-4">
                           <h4 className="mb-3">🎯 Analysis Results | විශ්ලේෂණ ප්‍රතිඵල</h4>
                           <div className="bg-white rounded p-4 border">
-                            <h5 className="text-success mb-3">Disease Prediction | රෝග අනාවැකිය:</h5>
-                            <p className="h3 text-dark mb-3">{result.disease || 'Unknown Disease'}</p>
+                            {result.lowConfidence ? (
+                              <>
+                                <h5 className="text-warning mb-3">⚠️ Low Confidence Detection | අඩු විශ්වාස හඳුනාගැනීම</h5>
+                                <p className="h5 text-muted mb-3">{result.message}</p>
+                                <div className="mt-3 p-3 bg-warning bg-opacity-10 rounded">
+                                  <h6 className="text-warning mb-2">📋 Suggestions | යෝජනා:</h6>
+                                  <ul className="text-start mb-0">
+                                    <li>Upload a clearer image with better lighting | වඩා හොඳ ආලෝකයක් සහිත පැහැදිලි ඡායාරූපයක් උඩුගත කරන්න</li>
+                                    <li>Focus on the disease symptoms | රෝග ලක්ෂණ කෙරෙහි අවධානය යොමු කරන්න</li>
+                                    <li>Ensure the leaf fills most of the image | පත්‍රය ඡායාරූපයේ වැඩි කොටසක් පුරවන්න</li>
+                                    <li>Try a different angle or closer shot | වෙනත් කෝණයකින් හෝ ළඟින් ගන්න</li>
+                                  </ul>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <h5 className="text-success mb-3">Disease Prediction | රෝග අනාවැකිය:</h5>
+                                <p className="h3 text-dark mb-3">{result.disease || 'Unknown Disease'}</p>
+                              </>
+                            )}
                             
-                            {/* Confidence Display - only show if confidence exists */}
-                            {result.confidence !== undefined && result.confidence > 0 && (
+                            {/* Confidence Display - only show if confidence exists and not low confidence */}
+                            {result.confidence !== undefined && result.confidence > 0 && !result.lowConfidence && (
                               <div className="mb-3">
                                 <h6 className="text-primary mb-2">Confidence Level | විශ්වාස මට්ටම:</h6>
                                 <div className="d-flex justify-content-center align-items-center mb-3">
@@ -690,8 +749,8 @@ const ImagePredictor = () => {
                                 console.log('Rule-based prediction:', rulePrediction);
                                 console.log('AI prediction:', result.disease);
                                 
-                                // Compare predictions
-                                const aiDisease = result.disease.toLowerCase();
+                                // Compare predictions - use originalDisease if available for validation
+                                const aiDisease = (result.originalDisease || result.disease).toLowerCase();
                                 const ruleDisease = rulePrediction.toLowerCase();
                                 
                                 let validationMessage = '';
@@ -705,13 +764,13 @@ const ImagePredictor = () => {
                                     (aiDisease.includes('healthy') && ruleDisease.includes('healthy'))) {
                                   
                                   isMatch = true;
-                                  validationMessage = `✅ තහවුරු කරන ලදි! | Confirmed!\n\nAI ප්‍රතිඵලය: ${result.disease}\nනීති පදනම් ප්‍රතිඵලය: ${rulePrediction}\n\nදෙකම එකම රෝගය පෙන්වයි. ප්‍රතිඵලය විශ්වාසදායකයි.`;
+                                  validationMessage = `✅ තහවුරු කරන ලදි! | Confirmed!\n\nAI ප්‍රතිඵලය: ${result.originalDisease || result.disease}\nනීති පදනම් ප්‍රතිඵලය: ${rulePrediction}\n\nදෙකම එකම රෝගය පෙන්වයි. ප්‍රතිඵලය විශ්වාසදායකයි.`;
                                 } else {
-                                  validationMessage = `❌ නොගැලපේ | No Match!\n\nAI ප්‍රතිඵලය: ${result.disease}\nනීති පදනම් ප්‍රතිඵලය: ${rulePrediction}\n\nප්‍රතිඵල නොගැලපේ. කරුණාකර වෙනත් පැහැදිලි ඡායාරූපයක් උඩුගත කරන්න.`;
+                                  validationMessage = `❌ නොගැලපේ | No Match!\n\nAI ප්‍රතිඵලය: ${result.originalDisease || result.disease}\nනීති පදනම් ප්‍රතිඵලය: ${rulePrediction}\n\nප්‍රතිඵල නොගැලපේ. කරුණාකර වෙනත් පැහැදිලි ඡායාරූපයක් උඩුගත කරන්න.`;
                                 }
                                 
                                 setValidationResult({
-                                  aiPrediction: result.disease,
+                                  aiPrediction: result.originalDisease || result.disease,
                                   rulePrediction: rulePrediction,
                                   isMatch: isMatch,
                                   message: validationMessage,
