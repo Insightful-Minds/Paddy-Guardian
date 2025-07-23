@@ -13,7 +13,7 @@ vectorizer = joblib.load("./model/vectorizer.pkl")
 
 # Sinhala label mapping
 disease_map = {
-    "Blast": "පතුරු රෝගය",
+    "Rice Blast": "පතුරු රෝගය",
     "Tungro": "ටුංග්රෝ රෝගය",
     "Bacterial Leaf Blight": "බැක්ටීරියානු පත්‍ර දාහය",
     "Brown Spot": "කළු ලප රෝගය"
