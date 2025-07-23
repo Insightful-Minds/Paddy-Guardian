@@ -15,7 +15,7 @@ vectorizer = joblib.load("./model/vectorizer.pkl")
 disease_map = {
     "Blast": "පතුරු රෝගය",
     "Tungro": "ටුංග්රෝ රෝගය",
-    "Bacterial Blight": "බැක්ටීරියානු පත්‍ර දාහය",
+    "Bacterial Leaf Blight": "බැක්ටීරියානු පත්‍ර දාහය",
     "Brown Spot": "කළු ලප රෝගය"
 }
 

@@ -32,7 +32,7 @@ const SinhalaPredictor = () => {
                     'කොම්පෝස්ට් හා කළු මැටි වැඩිපුර භාවිතා කරන්න'
                 ]
             },
-            'Bacterial Blight': {
+            'Bacterial Leaf Blight': {
                 sinhala: 'බැක්ටීරියානු පත්‍ර දාහය',
                 prevention: [
                     'සනීපාරක්ෂක ක්‍රම තදින් අනුගමනය කරන්න',
