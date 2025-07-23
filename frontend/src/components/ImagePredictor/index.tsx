@@ -68,6 +68,148 @@ const ImagePredictor = () => {
     }
   };
 
+  // Disease management suggestions for ImagePredictor
+  const getDiseaseManagementImage = (disease: string) => {
+    const diseaseManagement: { [key: string]: any } = {
+      'Blast': {
+        sinhala: 'පතුරු රෝගය',
+        prevention: [
+          'ප්‍රතිරෝධී ප්‍රභේද භාවිතා කරන්න',
+          'බීජ ප්‍රතිකාර කරන්න',
+          'ක්ෂේත්‍රය පිරිසිදුව තබන්න',
+          'නිසි ජල කළමනාකරණය'
+        ],
+        treatment: [
+          'Tricyclazole 75% WP - 200-300g/ha',
+          'Propiconazole 25% EC - 500ml/ha', 
+          'Carbendazim 50% WP - 500g/ha',
+          'දිලීර නාශක 7-10 දින අන්තරයෙන්'
+        ],
+        organic: [
+          'නීම් තෙල් ඉස්කරන්න',
+          'තඹ සල්ෆේට් 0.2% ද්‍රාවණය',
+          'ජෛව ප්‍රතිරෝධක ඉස්කරන්න',
+          'කොම්පෝස්ට් හා කළු මැටි භාවිතය'
+        ]
+      },
+      'Bacterial Blight': {
+        sinhala: 'බැක්ටීරියානු පත්‍ර දාහය',
+        prevention: [
+          'සනීපාරක්ෂක ක්‍රම අනුගමනය',
+          'ආසාදිත ક්ෂේත්‍ර වලින් ජලය මගහරින්න',
+          'නිසි පරතරයකින් රෝපණය',
+          'පිරිසිදු බීජ භාවිතය'
+        ],
+        treatment: [
+          'Streptomycin 90% + Tetracycline 10% - 200g/ha',
+          'Copper Oxychloride 50% WP - 2.5kg/ha',
+          'Kasugamycin 3% SL - 1.5-2.0L/ha',
+          'බැක්ටීරියා නාශක 10-12 දින අන්තරයෙන්'
+        ],
+        organic: [
+          'තඹ සල්ෆේට් 0.2% + අඟුරු කුඩු',
+          'සුදුළූණු සාරය ඉස්කරන්න',
+          'නීම් සාරය + සබන්',
+          'ක්ෂේත්‍රය වියළි තබන්න'
+        ]
+      },
+      'Brown Spot': {
+        sinhala: 'කළු ලප රෝගය',
+        prevention: [
+          'සීරුවේ සිට ප්‍රතිකාර ආරම්භ කරන්න',
+          'සේන්ද්‍රීය පස් සමතුලිතව භාවිතය',
+          'ක්ෂේත්‍රය පිරිසිදුව තබන්න',
+          'නිසි වාතාශ්‍රය සපයන්න'
+        ],
+        treatment: [
+          'Mancozeb 75% WP - 2kg/ha',
+          'Propiconazole 25% EC - 500ml/ha',
+          'Hexaconazole 5% SC - 2ml/L',
+          'දිලීර නාශක 2 සති අන්තරයෙන්'
+        ],
+        organic: [
+          'නීම් තෙල් 5ml/L ජලයට',
+          'බේකින් සෝඩා 5g/L ජලයට',
+          'අදරක් + කහ සාරය',
+          'ජෛව පස් වැඩි ප්‍රමාණයෙන්'
+        ]
+      },
+      'Tungro': {
+        sinhala: 'ටුංග්‍රෝ රෝගය',
+        prevention: [
+          'ප්‍රතිරෝධී ප්‍රභේද භාවිතා කරන්න',
+          'Green Leaf Hopper පාලනය',
+          'ආසාදිත පැල් ඉවත් කරන්න',
+          'නව ප්‍රදේශවල රෝපණයෙන් වළකින්න'
+        ],
+        treatment: [
+          'Imidacloprid 17.8% SL - 125ml/ha',
+          'Thiamethoxam 25% WG - 100g/ha',
+          'Buprofezin 25% SC - 1L/ha',
+          'ආසාදිත පැල් වහාම ඉවත් කරන්න'
+        ],
+        organic: [
+          'නීම් තෙල් + සබන් ද්‍රාවණය',
+          'කෘමි උගුල් භාවිතය',
+          'ස්වභාවික සතුරන් ආරක්ෂා කරන්න',
+          'මිශ්‍ර වගාව ක්‍රමය'
+        ]
+      },
+      'Healthy': {
+        sinhala: 'සෞඛ්‍ය සම්පන්න',
+        prevention: [
+          'සෞඛ්‍ය සම්පන්න තත්ත්වය පවත්වන්න',
+          'නිතිපතා නිරීක්ෂණය කරන්න',
+          'සමතුලිත පෝෂණය සපයන්න',
+          'ක්ෂේත්‍රය පිරිසිදුව තබන්න'
+        ],
+        treatment: [
+          'කිසිදු ප්‍රතිකාරයක් අවශ්‍ය නැත',
+          'මාසික නිරීක්ෂණ පවත්වන්න',
+          'ප්‍රතිකාරක ඉස්කරණ අත්හිටුවන්න',
+          'සාමාන්‍ය කළමනාකරණ ක්‍රම අනුගමනය'
+        ],
+        organic: [
+          'ජෛව පස් නිතිපතා',
+          'ස්වභාවික ප්‍රතිකාරක ඉස්කරන්න',
+          'මිශ්‍ර වගාව ක්‍රමය',
+          'පාරිසරික සමතුලිතාවය රැකගන්න'
+        ]
+      }
+    };
+
+    // Find matching disease
+    for (const [diseaseKey, management] of Object.entries(diseaseManagement)) {
+      if (disease.toLowerCase().includes(diseaseKey.toLowerCase()) || 
+          disease.includes(management.sinhala)) {
+        return management;
+      }
+    }
+
+    // Default management for unknown diseases
+    return {
+      sinhala: 'සාමාන්‍ය කළමනාකරණය',
+      prevention: [
+        'කෘෂිකර්ම නිලධාරියෙකුගෙන් උපදෙස් ගන්න',
+        'ක්ෂේත්‍රය පිරිසිදුව තබන්න',
+        'නිතිපතා නිරීක්ෂණය කරන්න',
+        'සමතුලිත පෝෂණය සපයන්න'
+      ],
+      treatment: [
+        'විශේෂඥ උපදෙස් අනුව ප්‍රතිකාර',
+        'රසායනික විශ්ලේෂණයක් කරවන්න',
+        'ප්‍රතිකාරක භාවිතයේදී ප්‍රවේශම් වන්න',
+        'නිසි මාත්‍රාව හා කාලසීමාව අනුගමනය'
+      ],
+      organic: [
+        'ස්වභාවික ප්‍රතිකාරක උත්සාහ කරන්න',
+        'ජෛව පස් භාවිතා කරන්න',
+        'කෘමි සතුරන් ස්වභාවිකව පාලනය',
+        'පාරිසරික හිතකර ක්‍රම අනුගමනය'
+      ]
+    };
+  };
+
   const handleFileChange = (e: any) => {
     const selectedFile = e.target.files?.[0] || null;
     setFile(selectedFile);
@@ -325,6 +467,97 @@ const ImagePredictor = () => {
                             </p>
                           </div>
                         </Alert>
+                      )}
+
+                      {/* Disease Management Section - Show when confidence > 70% */}
+                      {result && result.confidence > 70 && (
+                        <Card className="mt-4 border-success">
+                          <Card.Header className="bg-success text-white">
+                            <h5 className="mb-0">🌾 Disease Management | රෝග කළමනාකරණය</h5>
+                            <small>High confidence prediction - Management recommendations | ඉහළ විශ්වාස අනාවැකිය - කළමනාකරණ යෝජනා</small>
+                          </Card.Header>
+                          <Card.Body>
+                            {(() => {
+                              const management = getDiseaseManagementImage(result.disease);
+                              return (
+                                <Row>
+                                  <Col md={4}>
+                                    <Card className="h-100 border-primary">
+                                      <Card.Header className="bg-primary text-white py-2">
+                                        <h6 className="mb-0">🛡️ Prevention | වැළැක්වීම</h6>
+                                      </Card.Header>
+                                      <Card.Body>
+                                        <ul className="list-unstyled">
+                                          {management.prevention.map((item: string, index: number) => (
+                                            <li key={index} className="mb-2">
+                                              <span className="text-primary">•</span> {item}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </Card.Body>
+                                    </Card>
+                                  </Col>
+                                  
+                                  <Col md={4}>
+                                    <Card className="h-100 border-warning">
+                                      <Card.Header className="bg-warning text-dark py-2">
+                                        <h6 className="mb-0">💊 Chemical Treatment | රසායනික ප්‍රතිකාර</h6>
+                                      </Card.Header>
+                                      <Card.Body>
+                                        <ul className="list-unstyled">
+                                          {management.treatment.map((item: string, index: number) => (
+                                            <li key={index} className="mb-2">
+                                              <span className="text-warning">•</span> {item}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </Card.Body>
+                                    </Card>
+                                  </Col>
+                                  
+                                  <Col md={4}>
+                                    <Card className="h-100 border-success">
+                                      <Card.Header className="bg-success text-white py-2">
+                                        <h6 className="mb-0">🌿 Organic Treatment | ජෛව ප්‍රතිකාර</h6>
+                                      </Card.Header>
+                                      <Card.Body>
+                                        <ul className="list-unstyled">
+                                          {management.organic.map((item: string, index: number) => (
+                                            <li key={index} className="mb-2">
+                                              <span className="text-success">•</span> {item}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </Card.Body>
+                                    </Card>
+                                  </Col>
+                                </Row>
+                              );
+                            })()}
+                            
+                            {/* Important Notes */}
+                            <Alert variant="info" className="mt-4 mb-0">
+                              <div className="row">
+                                <div className="col-md-6">
+                                  <h6 className="text-info mb-2">⚠️ Important Notes | වැදගත් සටහන්:</h6>
+                                  <ul className="mb-0 small">
+                                    <li>කෘෂිකර්ම නිලධාරියෙකුගෙන් උපදෙස් ලබාගන්න</li>
+                                    <li>ප්‍රතිකාරක භාවිතයේදී ආරක්ෂක උපකරණ භාවිතා කරන්න</li>
+                                    <li>නිසි මාත්‍රාව හා කාලසීමාව අනුගමනය කරන්න</li>
+                                  </ul>
+                                </div>
+                                <div className="col-md-6">
+                                  <h6 className="text-info mb-2">📞 Emergency Contact | හදිසි සම්බන්ධතා:</h6>
+                                  <ul className="mb-0 small">
+                                    <li>Agricultural Extension Officer</li>
+                                    <li>Plant Protection Service - 1920</li>
+                                    <li>Rice Research Institute - 037-2229009</li>
+                                  </ul>
+                                </div>
+                              </div>
+                            </Alert>
+                          </Card.Body>
+                        </Card>
                       )}
                       
                       {error && (
