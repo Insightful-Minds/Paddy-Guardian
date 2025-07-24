@@ -8,9 +8,10 @@ from transformers import MBart50TokenizerFast, MBartForConditionalGeneration
 from peft import PeftModel
 
 # Load model and vectorizer
-clf = joblib.load("./model/symptom_model.pkl")
-vectorizer = joblib.load("./model/vectorizer.pkl")
-
+# clf = joblib.load("./model/symptom_model.pkl")
+# vectorizer = joblib.load("./model/vectorizer.pkl")
+clf = joblib.load("./model/best_symptom_model_logreg.pkl")
+vectorizer = joblib.load("./model/best_vectorizer_tfidf.pkl")
 # Sinhala label mapping
 disease_map = {
     "Rice Blast": "පතුරු රෝගය",

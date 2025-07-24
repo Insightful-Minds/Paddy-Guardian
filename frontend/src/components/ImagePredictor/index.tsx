@@ -630,8 +630,8 @@ const ImagePredictor = () => {
                   </Row>
                 )}
 
-                {/* Validation Questions - Show when confidence is below 35% */}
-                {showValidation && result && result.confidence < 70 && (
+                {/* Validation Questions - Show when confidence is between 40-70% and not low confidence */}
+                {showValidation && result && result.confidence >= 40 && result.confidence < 70 && !result.lowConfidence && (
                   <Row className="mt-4">
                     <Col>
                       <Card className="border-warning">
