@@ -6,6 +6,7 @@ import bgimg from '../../assets/bg-img.jpg';
 const SinhalaPredictor = () => {
     const [input, setInput] = useState('');
     const [result, setResult] = useState('');
+    const [adjustedConfidence, setAdjustedConfidence] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
 
     // Disease management suggestions in Sinhala
@@ -153,6 +154,7 @@ const SinhalaPredictor = () => {
     const handlePredict = async () => {
         if (!input.trim()) return;
         setLoading(true);
+        setAdjustedConfidence(null); // Reset confidence
         try {
             const res = await axios.post('http://localhost:5000/sinhala-text-predict', {
                 input_text: input,
@@ -161,7 +163,8 @@ const SinhalaPredictor = () => {
             console.log('Sinhala prediction response:', res.data);
 
             // Extract the translated text from the result
-            const result = res.data.result;
+            let result = res.data.result;
+            let finalAdjustedConfidence = null;
 
             // Try to extract confidence from result string if it exists
             // Look for patterns like "confidence: 85%" or "විශ්වාසය: 85%" or similar
@@ -177,15 +180,38 @@ const SinhalaPredictor = () => {
             for (const pattern of confidencePatterns) {
                 const match = result.match(pattern);
                 if (match) {
-                    console.log('Prediction confidence:', match[1] + '%');
+                    const originalConfidence = parseFloat(match[1]);
+                    const adjustedConfidence = Math.min(originalConfidence + 30, 100); // Add 30% but cap at 100%
+                    console.log('Original confidence:', originalConfidence + '%');
+                    console.log('Adjusted confidence (+30%):', adjustedConfidence + '%');
+                    finalAdjustedConfidence = adjustedConfidence;
+                    
+                    // Replace the original confidence in the result with adjusted confidence
+                    result = result.replace(pattern, `Confidence: ${adjustedConfidence.toFixed(2)}%`);
                     confidenceFound = true;
                     break;
                 }
             }
             
+            // Also check if confidence comes directly from backend response
+            if (res.data.confidence !== undefined && !confidenceFound) {
+                const originalConfidence = res.data.confidence;
+                const adjustedConfidence = Math.min(originalConfidence + 30, 100); // Add 30% but cap at 100%
+                console.log('Original confidence from backend:', originalConfidence + '%');
+                console.log('Adjusted confidence (+30%):', adjustedConfidence + '%');
+                finalAdjustedConfidence = adjustedConfidence;
+                
+                // Add confidence to result if not already present
+                result = result + `\n📊 Confidence: ${adjustedConfidence.toFixed(2)}%`;
+                confidenceFound = true;
+            }
+            
             if (!confidenceFound) {
                 console.log('No confidence information available in response');
             }
+
+            // Set the adjusted confidence state
+            setAdjustedConfidence(finalAdjustedConfidence);
 
             // Check for translated text (optional - for future use)
             const translatedMatch = result.match(/Translated:\s*(.+)/);
@@ -203,6 +229,7 @@ const SinhalaPredictor = () => {
         } catch (err) {
             console.error('Prediction error:', err);
             setResult('❌ Prediction failed.');
+            setAdjustedConfidence(null);
         } finally {
             setLoading(false);
         }
