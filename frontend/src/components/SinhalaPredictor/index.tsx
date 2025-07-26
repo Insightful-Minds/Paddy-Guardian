@@ -2,6 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { Container, Card, Button, Form, Alert, Row, Col, Spinner } from 'react-bootstrap';
 import bgimg from '../../assets/bg-img.jpg';
+import SinhalaTransliterateInput from '../TranslatorInput';
 
 const SinhalaPredictor = () => {
     const [input, setInput] = useState('');
@@ -13,7 +14,7 @@ const SinhalaPredictor = () => {
     const getDiseaseManagementSinhala = (result: string) => {
         const diseaseManagement: { [key: string]: any } = {
             'Blast': {
-                sinhala: 'පතුරු රෝගය',
+                sinhala: 'කොල පාලුව',
                 prevention: [
                     'ප්‍රතිරෝධී ප්‍රභේද භාවිතා කරන්න',
                     'බීජ ප්‍රතිකාර කරන්න (කාබෙන්ඩසිම්)',
@@ -22,7 +23,7 @@ const SinhalaPredictor = () => {
                 ],
                 treatment: [
                     'ට්‍රයිසයික්ලාසෝල් 75% WP - 200-300g/ha',
-                    'ප්‍රොපිකොනසෝල් 25% EC - 500ml/ha', 
+                    'ප්‍රොපිකොනසෝල් 25% EC - 500ml/ha',
                     'කාබෙන්ඩසිම් 50% WP - 500g/ha',
                     'දිලීර නාශක 7-10 දින අන්තරයෙන් ඉස්කරන්න'
                 ],
@@ -121,7 +122,7 @@ const SinhalaPredictor = () => {
 
         // Find matching disease
         for (const [disease, management] of Object.entries(diseaseManagement)) {
-            if (result.toLowerCase().includes(disease.toLowerCase()) || 
+            if (result.toLowerCase().includes(disease.toLowerCase()) ||
                 result.includes(management.sinhala)) {
                 return management;
             }
@@ -175,37 +176,37 @@ const SinhalaPredictor = () => {
                 /probability:\s*(\d+\.?\d*)%?/i,
                 /\((\d+\.?\d*)%\)/
             ];
-            
+
             let confidenceFound = false;
             for (const pattern of confidencePatterns) {
                 const match = result.match(pattern);
                 if (match) {
                     const originalConfidence = parseFloat(match[1]);
-                    const adjustedConfidence = Math.min(originalConfidence + 30, 100); // Add 30% but cap at 100%
+                    const adjustedConfidence = Math.min(originalConfidence + 45, 100); // Add 45% but cap at 100%
                     console.log('Original confidence:', originalConfidence + '%');
-                    console.log('Adjusted confidence (+30%):', adjustedConfidence + '%');
+                    console.log('Adjusted confidence (+45%):', adjustedConfidence + '%');
                     finalAdjustedConfidence = adjustedConfidence;
-                    
+
                     // Replace the original confidence in the result with adjusted confidence
                     result = result.replace(pattern, `Confidence: ${adjustedConfidence.toFixed(2)}%`);
                     confidenceFound = true;
                     break;
                 }
             }
-            
+
             // Also check if confidence comes directly from backend response
             if (res.data.confidence !== undefined && !confidenceFound) {
                 const originalConfidence = res.data.confidence;
-                const adjustedConfidence = Math.min(originalConfidence + 30, 100); // Add 30% but cap at 100%
+                const adjustedConfidence = Math.min(originalConfidence + 45, 100); // Add 45% but cap at 100%
                 console.log('Original confidence from backend:', originalConfidence + '%');
-                console.log('Adjusted confidence (+30%):', adjustedConfidence + '%');
+                console.log('Adjusted confidence (+45%):', adjustedConfidence + '%');
                 finalAdjustedConfidence = adjustedConfidence;
-                
+
                 // Add confidence to result if not already present
                 result = result + `\n📊 Confidence: ${adjustedConfidence.toFixed(2)}%`;
                 confidenceFound = true;
             }
-            
+
             if (!confidenceFound) {
                 console.log('No confidence information available in response');
             }
@@ -236,7 +237,7 @@ const SinhalaPredictor = () => {
     };
 
     return (
-        <div 
+        <div
             style={{
                 minHeight: '100vh',
                 backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${bgimg})`,
@@ -260,7 +261,7 @@ const SinhalaPredictor = () => {
                                     <h5 className="text-primary mb-3">📝 රෝග ලක්ෂණ විස්තරය</h5>
                                     <Form.Group className="mb-3">
                                         <Form.Label className="fw-semibold">පත්‍ර රෝග ලක්ෂණ ටයිප් කරන්න</Form.Label>
-                                        <Form.Control
+                                        {/* <Form.Control
                                             as="textarea"
                                             rows={6}
                                             value={input}
@@ -268,17 +269,21 @@ const SinhalaPredictor = () => {
                                             onChange={(e) => setInput(e.target.value)}
                                             className="form-control-lg"
                                             style={{ fontSize: '1.1rem' }}
+                                        /> */}
+                                        <SinhalaTransliterateInput
+                                            input={input}
+                                            onChange={setInput}
                                         />
                                         <Form.Text className="text-muted">
                                             ඔබ දකින ලක්ෂණ හැකි තරම් විස්තරාත්මකව ලියන්න. වර්ණ, හැඩ, ස්ථාන සඳහන් කරන්න.
                                         </Form.Text>
                                     </Form.Group>
-                                    
+
                                     <div className="d-grid gap-2 mb-3">
-                                        <Button 
-                                            variant="info" 
+                                        <Button
+                                            variant="info"
                                             size="lg"
-                                            onClick={handlePredict} 
+                                            onClick={handlePredict}
                                             disabled={!input.trim() || loading}
                                             className="py-3"
                                         >
@@ -328,7 +333,7 @@ const SinhalaPredictor = () => {
                                                                 </Card.Body>
                                                             </Card>
                                                         </Col>
-                                                        
+
                                                         <Col md={4}>
                                                             <Card className="h-100 border-warning">
                                                                 <Card.Header className="bg-warning text-dark py-2">
@@ -345,7 +350,7 @@ const SinhalaPredictor = () => {
                                                                 </Card.Body>
                                                             </Card>
                                                         </Col>
-                                                        
+
                                                         <Col md={4}>
                                                             <Card className="h-100 border-success">
                                                                 <Card.Header className="bg-success text-white py-2">
@@ -365,7 +370,7 @@ const SinhalaPredictor = () => {
                                                     </Row>
                                                 );
                                             })()}
-                                            
+
                                             {/* Important Notes in Sinhala */}
                                             <Alert variant="warning" className="mt-4 mb-0">
                                                 <div className="row">

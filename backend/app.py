@@ -14,7 +14,7 @@ clf = joblib.load("./model/best_symptom_model_logreg.pkl")
 vectorizer = joblib.load("./model/best_vectorizer_tfidf.pkl")
 # Sinhala label mapping
 disease_map = {
-    "Rice Blast": "පතුරු රෝගය",
+    "Rice Blast": "කොල පාලුව",
     "Tungro": "ටුංග්රෝ රෝගය",
     "Bacterial Leaf Blight": "බැක්ටීරියානු පත්‍ර දාහය",
     "Brown Spot": "කළු ලප රෝගය"

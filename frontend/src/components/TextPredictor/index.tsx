@@ -45,7 +45,7 @@ const TextDiseasePredictor = () => {
   const getDiseaseManagement = (result: string) => {
     const diseaseManagement: { [key: string]: any } = {
       'Blast': {
-        sinhala: 'පතුරු රෝගය',
+        sinhala: 'කොල පාලුව',
         prevention: [
           'ප්‍රතිරෝධී ප්‍රභේද භාවිතා කරන්න',
           'බීජ ප්‍රතිකාර කරන්න',

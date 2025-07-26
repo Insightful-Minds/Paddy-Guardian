@@ -58,7 +58,7 @@ const ImagePredictor = () => {
   // Helper function to get disease name in Sinhala
   const getDiseaseNameSinhala = (disease: string) => {
     const diseaseTranslations: { [key: string]: string } = {
-      'Blast': 'පතුරු රෝගය',
+      'Blast': 'කොල පාලුව',
       'Bacterial Blight': 'බැක්ටීරියානු පත්‍ර දාහය',
       'Brown Spot': 'කළු ලප රෝගය',
       'Tungro': 'ටුංග්‍රෝ රෝගය',
@@ -100,7 +100,7 @@ const ImagePredictor = () => {
   const getDiseaseManagementImage = (disease: string) => {
     const diseaseManagement: { [key: string]: any } = {
       'Blast': {
-        sinhala: 'පතුරු රෝගය',
+        sinhala: 'කොල පාලුව',
         prevention: [
           'ප්‍රතිරෝධී ප්‍රභේද භාවිතා කරන්න',
           'බීජ ප්‍රතිකාර කරන්න',
