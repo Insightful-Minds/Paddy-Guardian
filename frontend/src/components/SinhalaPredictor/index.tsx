@@ -158,20 +158,50 @@ const SinhalaPredictor = () => {
                 input_text: input,
             });
 
+            console.log('Sinhala prediction response:', res.data);
+
             // Extract the translated text from the result
             const result = res.data.result;
 
-            let translatedText = 'Translation not found';
+            // Try to extract confidence from result string if it exists
+            // Look for patterns like "confidence: 85%" or "විශ්වාසය: 85%" or similar
+            const confidencePatterns = [
+                /confidence:\s*(\d+\.?\d*)%?/i,
+                /විශ්වාසය:\s*(\d+\.?\d*)%?/i,
+                /accuracy:\s*(\d+\.?\d*)%?/i,
+                /probability:\s*(\d+\.?\d*)%?/i,
+                /\((\d+\.?\d*)%\)/
+            ];
+            
+            let confidenceFound = false;
+            for (const pattern of confidencePatterns) {
+                const match = result.match(pattern);
+                if (match) {
+                    console.log('Prediction confidence:', match[1] + '%');
+                    confidenceFound = true;
+                    break;
+                }
+            }
+            
+            if (!confidenceFound) {
+                console.log('No confidence information available in response');
+            }
 
+            // Check for translated text (optional - for future use)
             const translatedMatch = result.match(/Translated:\s*(.+)/);
-
             if (translatedMatch) {
-                translatedText = translatedMatch[1];
+                console.log('Translated text found:', translatedMatch[1]);
+            }
+
+            // Extract predicted disease
+            const diseaseMatch = result.match(/Predicted Disease:\s*(.+)/);
+            if (diseaseMatch) {
+                console.log('Predicted disease:', diseaseMatch[1]);
             }
 
             setResult(result);
         } catch (err) {
-            console.error(err);
+            console.error('Prediction error:', err);
             setResult('❌ Prediction failed.');
         } finally {
             setLoading(false);

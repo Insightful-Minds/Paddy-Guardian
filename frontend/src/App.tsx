@@ -24,9 +24,9 @@ function App() {
               <Nav.Link as={NavLink} to="/image" className="mx-2" style={{ fontSize: '0.9rem' }}>
                 📷 Image Analysis | රූප විශ්ලේෂණය
               </Nav.Link>
-              <Nav.Link as={NavLink} to="/text" className="mx-2" style={{ fontSize: '0.9rem' }}>
+              {/* <Nav.Link as={NavLink} to="/text" className="mx-2" style={{ fontSize: '0.9rem' }}>
                 📝 English Text | ඉංග්‍රීසි පෙළ
-              </Nav.Link>
+              </Nav.Link> */}
               <Nav.Link as={NavLink} to="/sinhala" className="mx-2" style={{ fontSize: '0.9rem' }}>
                 🇱🇰 Sinhala Text | සිංහල පෙළ
               </Nav.Link>

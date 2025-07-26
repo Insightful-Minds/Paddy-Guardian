@@ -65,16 +65,28 @@ def sinhala_text_predict():
 
     vec = vectorizer.transform([english_text])
     pred = clf.predict(vec)[0]
+    
+    # Get prediction probabilities for confidence
+    pred_proba = clf.predict_proba(vec)[0]
+    confidence = max(pred_proba) * 100  # Convert to percentage
+    
     sinhala_pred = disease_map.get(pred, "නොදන්නා රෝගයකි")
 
     result = (
         f"🈁 Sinhala Input: {sinhala_text}\n"
         f"🌐 Translated: {english_text}\n"
         f"✅ Predicted Disease: {pred}\n"
-        f"✅ අනාවැකි රෝගය: {sinhala_pred}"
+        f"✅ අනාවැකි රෝගය: {sinhala_pred}\n"
+        f"📊 Confidence: {confidence:.2f}%"
     )
 
-    return jsonify({"result": result})
+    return jsonify({
+        "result": result,
+        "confidence": round(confidence, 2),
+        "disease": pred,
+        "sinhala_disease": sinhala_pred,
+        "translated_text": english_text
+    })
 
 @app.route('/text-predict', methods=['POST'])
 def english_text_predict():
@@ -86,9 +98,21 @@ def english_text_predict():
 
     vec = vectorizer.transform([input_text])
     pred = clf.predict(vec)[0]
+    
+    # Get prediction probabilities for confidence
+    pred_proba = clf.predict_proba(vec)[0]
+    confidence = max(pred_proba) * 100  # Convert to percentage
+    
     sinhala_pred = disease_map.get(pred, "නොදන්නා රෝගයකි")
 
-    return jsonify({"result": f"✅ Predicted Disease: {pred}\n✅ අනාවැකි රෝගය: {sinhala_pred}"})
+    result = f"✅ Predicted Disease: {pred}\n✅ අනාවැකි රෝගය: {sinhala_pred}\n📊 Confidence: {confidence:.2f}%"
+
+    return jsonify({
+        "result": result,
+        "confidence": round(confidence, 2),
+        "disease": pred,
+        "sinhala_disease": sinhala_pred
+    })
 
 @app.route('/image-predict', methods=['POST'])
 def image_predict():

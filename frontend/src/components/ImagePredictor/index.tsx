@@ -55,6 +55,34 @@ const ImagePredictor = () => {
     return 'Unknown';
   };
 
+  // Helper function to get disease name in Sinhala
+  const getDiseaseNameSinhala = (disease: string) => {
+    const diseaseTranslations: { [key: string]: string } = {
+      'Blast': 'පතුරු රෝගය',
+      'Bacterial Blight': 'බැක්ටීරියානු පත්‍ර දාහය',
+      'Brown Spot': 'කළු ලප රෝගය',
+      'Tungro': 'ටුංග්‍රෝ රෝගය',
+      'Healthy': 'සෞඛ්‍ය සම්පන්න',
+      'Cannot identify disease': 'රෝගයක් හඳුනාගත නොහැක',
+      'Unknown Disease': 'නොදන්නා රෝගයක්',
+      'Unknown': 'නොදන්නා'
+    };
+
+    // Check for exact match first
+    if (diseaseTranslations[disease]) {
+      return diseaseTranslations[disease];
+    }
+
+    // Check for partial matches
+    for (const [englishName, sinhalaName] of Object.entries(diseaseTranslations)) {
+      if (disease.toLowerCase().includes(englishName.toLowerCase())) {
+        return sinhalaName;
+      }
+    }
+
+    return 'නොදන්නා රෝගයක්'; // Default fallback
+  };
+
   // Helper function to get confidence level color and text
   const getConfidenceInfo = (confidence: number) => {
     if (confidence >= 90) {
@@ -480,7 +508,10 @@ const ImagePredictor = () => {
                             ) : (
                               <>
                                 <h5 className="text-success mb-3">Disease Prediction | රෝග අනාවැකිය:</h5>
-                                <p className="h3 text-dark mb-3">{result.disease || 'Unknown Disease'}</p>
+                                <div className="mb-3">
+                                  <p className="h3 text-dark mb-1">{result.disease || 'Unknown Disease'}</p>
+                                  <p className="h5 text-muted mb-3">{getDiseaseNameSinhala(result.disease || 'Unknown Disease')}</p>
+                                </div>
                               </>
                             )}
                             

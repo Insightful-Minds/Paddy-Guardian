@@ -61,7 +61,7 @@ const Home = () => {
                             </span>
                         </Card.Text>
                         <Row className="mt-4">
-                            <Col md={4} className="mb-3">
+                            <Col md={6} className="mb-3">
                                 <Card className="h-100 shadow-sm border-success">
                                     <Card.Body className="text-center">
                                         <div style={{ fontSize: '3rem' }}>📷</div>
@@ -79,7 +79,7 @@ const Home = () => {
                                     </Card.Body>
                                 </Card>
                             </Col>
-                            <Col md={4} className="mb-3">
+                            {/* <Col md={4} className="mb-3">
                                 <Card className="h-100 shadow-sm border-info">
                                     <Card.Body className="text-center">
                                         <div style={{ fontSize: '3rem' }}>📝</div>
@@ -96,8 +96,8 @@ const Home = () => {
                                         </Link>
                                     </Card.Body>
                                 </Card>
-                            </Col>
-                            <Col md={4} className="mb-3">
+                            </Col> */}
+                            <Col md={6} className="mb-3">
                                 <Card className="h-100 shadow-sm border-warning">
                                     <Card.Body className="text-center">
                                         <div style={{ fontSize: '3rem' }}>🇱🇰</div>
