@@ -22,8 +22,30 @@ disease_map = {
 
 # Keyword-based validation
 def is_valid_symptom(text):
-    keywords = ["yellow", "brown", "spot", "wilt", "leaf", "tip", "dry", "patch", "streak", "rot", "lesion"]
+    keywords = [
+        # Color indicators
+        "yellow", "orange", "brown", "gray", "green", "straw", "rust", "pale", "white", "mottled", "chlorotic",
+
+        # Leaf terms
+        "leaf", "leaves", "tip", "blade", "margin", "sheath", "midrib", "vein", "streak", "spot", "lesion", "blotch", "stripe",
+
+        # Plant conditions
+        "wilt", "dry", "roll", "curl", "necrosis", "ooze", "milky", "dewdrop", "withering", "shrink", "droop", "die",
+
+        # Growth symptoms
+        "stunt", "delayed", "flowering", "maturity", "tillering", "panicle", "sterile", "unfilled", "grain", "small", "exsert",
+
+        # Infections or stages
+        "seedling", "transplant", "young", "older", "tillering", "vegetative", "kresek", "infected", "saprophytic", "early",
+
+        # Other signs
+        "irregular", "wavy", "coalesce", "discoloration", "chlorosis", "interveinal", "beads", "dots", "deformed", "streak",
+
+        # Vector/disease-specific
+        "hopper", "tungro", "bacterial", "fungi", "RTBV", "RTSV", "virus", "infestation"
+    ]
     return sum(1 for word in keywords if word in text.lower()) >= 2
+
 
 # Load translation model (LoRA adapter)
 print("🔁 Loading translation model...")
