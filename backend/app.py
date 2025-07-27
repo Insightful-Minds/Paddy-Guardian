@@ -58,7 +58,9 @@ print("✅ Translator loaded.")
 
 def translate_sinhala_to_english(text):
     inputs = tokenizer(text, return_tensors="pt", padding=True)
-    generated_ids = translator.generate(**inputs, forced_bos_token_id=tokenizer.lang_code_to_id["en_XX"])
+    generated_ids = translator.generate(**inputs, forced_bos_token_id=tokenizer.lang_code_to_id["en_XX"], num_beams=4,
+        max_length=128,
+        early_stopping=True)
     translated = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
     return translated[0]
 

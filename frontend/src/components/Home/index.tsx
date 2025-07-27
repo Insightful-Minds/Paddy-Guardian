@@ -132,7 +132,7 @@ const Home = () => {
                                     <Col md={4} className="mb-4">
                                         <Card className="h-100 border-warning">
                                             <Card.Body>
-                                                <h5 className="text-warning">🍂 Leaf Blast | පත්‍ර කොල පාලුව</h5>
+                                                <h5 className="text-warning">🍂 Leaf Blast | පත්‍ර පතුරු රෝගය</h5>
                                                 <p><strong>Symptoms | ලක්ෂණ:</strong> Diamond-shaped lesions with gray centers and brown margins</p>
                                                 <p className="text-muted small">අළු මැද කොටස් සහ දුඹුරු මායිම් සහිත දියමන්ති හැඩැති තුවාල</p>
                                                 <p><strong>Impact | බලපෑම:</strong> Can cause 10-35% yield loss | අස්වැන්නෙන් 10-35% ක් අහිමි විය හැකිය</p>

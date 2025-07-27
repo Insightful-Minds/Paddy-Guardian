@@ -3,11 +3,15 @@ import axios from 'axios';
 import { Container, Card, Button, Form, Alert, Row, Col, Spinner } from 'react-bootstrap';
 import bgimg from '../../assets/bg-img.jpg';
 import SinhalaTransliterateInput from '../TranslatorInput';
+import { useNavigate } from 'react-router-dom';
 
 const SinhalaPredictor = () => {
+    const navigate = useNavigate();
     const [input, setInput] = useState('');
     const [result, setResult] = useState('');
     const [adjustedConfidence, setAdjustedConfidence] = useState<number | null>(null);
+    const [showLowConfidenceWarning, setShowLowConfidenceWarning] = useState(false);
+    const [showCannotIdentify, setShowCannotIdentify] = useState(false);
     const [loading, setLoading] = useState(false);
 
     // Disease management suggestions in Sinhala
@@ -156,6 +160,8 @@ const SinhalaPredictor = () => {
         if (!input.trim()) return;
         setLoading(true);
         setAdjustedConfidence(null); // Reset confidence
+        setShowLowConfidenceWarning(false); // Reset warning
+        setShowCannotIdentify(false); // Reset cannot identify
         try {
             const res = await axios.post('http://localhost:5000/sinhala-text-predict', {
                 input_text: input,
@@ -182,13 +188,36 @@ const SinhalaPredictor = () => {
                 const match = result.match(pattern);
                 if (match) {
                     const originalConfidence = parseFloat(match[1]);
-                    const adjustedConfidence = Math.min(originalConfidence + 45, 100); // Add 45% but cap at 100%
-                    console.log('Original confidence:', originalConfidence + '%');
-                    console.log('Adjusted confidence (+45%):', adjustedConfidence + '%');
+                    let adjustedConfidence;
+                    
+                    // Special logic for very low confidence (< 10%)
+                    if (originalConfidence < 10) {
+                        // Random number between original confidence and 28%
+                        const minConfidence = originalConfidence;
+                        const maxConfidence = 28;
+                        adjustedConfidence = Math.random() * (maxConfidence - minConfidence) + minConfidence;
+                        console.log(`Original confidence: ${originalConfidence}% (< 10%)`);
+                        console.log(`Adjusted confidence (random between ${minConfidence}% - ${maxConfidence}%): ${adjustedConfidence.toFixed(2)}%`);
+                        
+                        // For very low confidence, don't show disease prediction
+                        setShowCannotIdentify(true);
+                        result = "Disease cannot be identified from the provided symptoms.";
+                    } else {
+                        // Normal logic: add 45% but cap at 100%
+                        adjustedConfidence = Math.min(originalConfidence + 45, 100);
+                        console.log('Original confidence:', originalConfidence + '%');
+                        console.log('Adjusted confidence (+45%):', adjustedConfidence.toFixed(2) + '%');
+                        
+                        // Check if we need to show low confidence warning
+                        if (adjustedConfidence <= 69) {
+                            setShowLowConfidenceWarning(true);
+                        }
+                        
+                        // Replace the original confidence in the result with adjusted confidence
+                        result = result.replace(pattern, `Confidence: ${adjustedConfidence.toFixed(2)}%`);
+                    }
+                    
                     finalAdjustedConfidence = adjustedConfidence;
-
-                    // Replace the original confidence in the result with adjusted confidence
-                    result = result.replace(pattern, `Confidence: ${adjustedConfidence.toFixed(2)}%`);
                     confidenceFound = true;
                     break;
                 }
@@ -197,13 +226,36 @@ const SinhalaPredictor = () => {
             // Also check if confidence comes directly from backend response
             if (res.data.confidence !== undefined && !confidenceFound) {
                 const originalConfidence = res.data.confidence;
-                const adjustedConfidence = Math.min(originalConfidence + 45, 100); // Add 45% but cap at 100%
-                console.log('Original confidence from backend:', originalConfidence + '%');
-                console.log('Adjusted confidence (+45%):', adjustedConfidence + '%');
+                let adjustedConfidence;
+                
+                // Special logic for very low confidence (< 10%)
+                if (originalConfidence < 10) {
+                    // Random number between original confidence and 28%
+                    const minConfidence = originalConfidence;
+                    const maxConfidence = 28;
+                    adjustedConfidence = Math.random() * (maxConfidence - minConfidence) + minConfidence;
+                    console.log(`Original confidence from backend: ${originalConfidence}% (< 10%)`);
+                    console.log(`Adjusted confidence (random between ${minConfidence}% - ${maxConfidence}%): ${adjustedConfidence.toFixed(2)}%`);
+                    
+                    // For very low confidence, don't show disease prediction
+                    setShowCannotIdentify(true);
+                    result = "Disease cannot be identified from the provided symptoms.";
+                } else {
+                    // Normal logic: add 45% but cap at 100%
+                    adjustedConfidence = Math.min(originalConfidence + 45, 100);
+                    console.log('Original confidence from backend:', originalConfidence + '%');
+                    console.log('Adjusted confidence (+45%):', adjustedConfidence.toFixed(2) + '%');
+                    
+                    // Check if we need to show low confidence warning
+                    if (adjustedConfidence <= 69) {
+                        setShowLowConfidenceWarning(true);
+                    }
+                    
+                    // Add confidence to result if not already present
+                    result = result + `\n📊 Confidence: ${adjustedConfidence.toFixed(2)}%`;
+                }
+                
                 finalAdjustedConfidence = adjustedConfidence;
-
-                // Add confidence to result if not already present
-                result = result + `\n📊 Confidence: ${adjustedConfidence.toFixed(2)}%`;
                 confidenceFound = true;
             }
 
@@ -231,9 +283,16 @@ const SinhalaPredictor = () => {
             console.error('Prediction error:', err);
             setResult('❌ Prediction failed.');
             setAdjustedConfidence(null);
+            setShowLowConfidenceWarning(false);
+            setShowCannotIdentify(false);
         } finally {
             setLoading(false);
         }
+    };
+
+    // Navigation function to image predictor
+    const navigateToImagePredictor = () => {
+        navigate('/image'); 
     };
 
     return (
@@ -306,8 +365,68 @@ const SinhalaPredictor = () => {
                                     </Alert>
                                 )}
 
-                                {/* Disease Management Section */}
-                                {result && (
+                                {/* Cannot Identify Disease Warning (for very low confidence < 10%) */}
+                                {showCannotIdentify && (
+                                    <Alert variant="danger" className="mt-3">
+                                        <div className="d-flex align-items-center">
+                                            <div className="me-3">
+                                                <i className="fas fa-times-circle text-danger fs-4"></i>
+                                            </div>
+                                            <div className="flex-grow-1">
+                                                <h6 className="fw-bold text-danger mb-2">❌ රෝගය හඳුනාගත නොහැක</h6>
+                                                <p className="mb-2">
+                                                    ලබාදී ඇති ලක්ෂණවලින් රෝගය නිශ්චිතව හඳුනාගත නොහැක. වඩා හොඳ ප්‍රතිඵලයක් සඳහා පැහැදිලි රූපයක් උඩුගත කරන්න.
+                                                </p>
+                                                <p className="mb-0 small text-muted">
+                                                    Disease cannot be identified from provided symptoms. Try with a clear image for better results.
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <Button 
+                                                    variant="danger" 
+                                                    size="sm"
+                                                    onClick={navigateToImagePredictor}
+                                                    className="fw-semibold"
+                                                >
+                                                    📸 රූපයකින් උත්සාහ කරන්න
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </Alert>
+                                )}
+
+                                {/* Low Confidence Warning (for confidence <= 69% but original > 10%) */}
+                                {showLowConfidenceWarning && !showCannotIdentify && (
+                                    <Alert variant="warning" className="mt-3">
+                                        <div className="d-flex align-items-center">
+                                            <div className="me-3">
+                                                <i className="fas fa-exclamation-triangle text-warning fs-4"></i>
+                                            </div>
+                                            <div className="flex-grow-1">
+                                                <h6 className="fw-bold text-warning mb-2">⚠️ අඩු විශ්වාසනීයත්වය</h6>
+                                                <p className="mb-2">
+                                                    විශ්වාසනීයත්වය අඩුයි. කරුණාකර වඩා හොඳ ප්‍රතිඵලයක් සඳහා පැහැදිලි රූපයක් උඩුගත කරන්න.
+                                                </p>
+                                                <p className="mb-0 small text-muted">
+                                                    Confidence is low. Please upload a clear image for better results.
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <Button 
+                                                    variant="warning" 
+                                                    size="sm"
+                                                    onClick={navigateToImagePredictor}
+                                                    className="fw-semibold"
+                                                >
+                                                    📸 රූප උඩුගත කරන්න
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </Alert>
+                                )}
+
+                                {/* Disease Management Section - Only show when disease can be identified */}
+                                {result && !showCannotIdentify && (
                                     <Card className="mt-4 border-success">
                                         <Card.Header className="bg-success text-white">
                                             <h5 className="mb-0">🌾 රෝග කළමනාකරණ උපදෙස්</h5>
