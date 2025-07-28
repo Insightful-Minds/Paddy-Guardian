@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Container, Card, Button, Form, Alert, Row, Col, Spinner } from 'react-bootstrap';
 import bgimg from '../../assets/bg-img.jpg';
 import SinhalaTransliterateInput from '../TranslatorInput';
+import VoiceInput from '../VoiceInput';
 import { useNavigate } from 'react-router-dom';
 
 const SinhalaPredictor = () => {
@@ -318,8 +319,39 @@ const SinhalaPredictor = () => {
                             <Card.Body className="p-5">
                                 <div className="mb-4">
                                     <h5 className="text-primary mb-3">📝 රෝග ලක්ෂණ විස්තරය</h5>
+                                    
+                                    {/* Voice Input Section */}
+                                    <Card className="mb-4 border-info" style={{ backgroundColor: 'rgba(13, 202, 240, 0.05)' }}>
+                                        <Card.Body>
+                                            <h6 className="text-info mb-3">🎤 හඬ ආදානය | Voice Input</h6>
+                                            <VoiceInput
+                                                onTranscript={(transcript) => {
+                                                    // Append to existing input or replace based on user preference
+                                                    const newText = input ? `${input} ${transcript}` : transcript;
+                                                    setInput(newText);
+                                                }}
+                                                onError={(error) => {
+                                                    console.error('Voice input error:', error);
+                                                }}
+                                                language="si-LK"
+                                                className="mb-2"
+                                            />
+                                            <Alert variant="info" className="mb-0 small">
+                                                <strong>📋 Tips for better voice recognition:</strong>
+                                                <ul className="mb-0 mt-2">
+                                                    <li>Speak clearly and slowly in Sinhala</li>
+                                                    <li>Use a quiet environment</li>
+                                                    <li>Describe symptoms like: "පත්‍රයේ දුඹුරු ලප දිස්වේ", "කහ පැහැ වී ඇත"</li>
+                                                </ul>
+                                                <small className="text-muted d-block mt-2">
+                                                    හඬ හඳුනාගැනීම සඳහා: පැහැදිලිව හා සෙමින් කතා කරන්න, නිස්කලංක පරිසරයක් භාවිතා කරන්න
+                                                </small>
+                                            </Alert>
+                                        </Card.Body>
+                                    </Card>
+
                                     <Form.Group className="mb-3">
-                                        <Form.Label className="fw-semibold">පත්‍ර රෝග ලක්ෂණ ටයිප් කරන්න</Form.Label>
+                                        <Form.Label className="fw-semibold">පත්‍ර රෝග ලක්ෂණ ටයිප් කරන්න හෝ හඬින් කියන්න</Form.Label>
                                         {/* <Form.Control
                                             as="textarea"
                                             rows={6}
@@ -334,28 +366,45 @@ const SinhalaPredictor = () => {
                                             onChange={setInput}
                                         />
                                         <Form.Text className="text-muted">
-                                            ඔබ දකින ලක්ෂණ හැකි තරම් විස්තරාත්මකව ලියන්න. වර්ණ, හැඩ, ස්ථාන සඳහන් කරන්න.
+                                            ඔබ දකින ලක්ෂණ හැකි තරම් විස්තරාත්මකව ලියන්න හෝ හඬින් කියන්න. වර්ණ, හැඩ, ස්ථාන සඳහන් කරන්න.
                                         </Form.Text>
                                     </Form.Group>
 
-                                    <div className="d-grid gap-2 mb-3">
-                                        <Button
-                                            variant="info"
-                                            size="lg"
-                                            onClick={handlePredict}
-                                            disabled={!input.trim() || loading}
-                                            className="py-3"
-                                        >
-                                            {loading ? (
-                                                <>
-                                                    <Spinner animation="border" size="sm" className="me-2" />
-                                                    ප්‍රතිඵල ගණනය කරමින්...
-                                                </>
-                                            ) : (
-                                                <>🔍 රෝගය හඳුනාගන්න</>
-                                            )}
-                                        </Button>
-                                    </div>
+                                    <Row className="mb-3">
+                                        <Col>
+                                            <div className="d-grid gap-2">
+                                                <Button
+                                                    variant="info"
+                                                    size="lg"
+                                                    onClick={handlePredict}
+                                                    disabled={!input.trim() || loading}
+                                                    className="py-3"
+                                                >
+                                                    {loading ? (
+                                                        <>
+                                                            <Spinner animation="border" size="sm" className="me-2" />
+                                                            ප්‍රතිඵල ගණනය කරමින්...
+                                                        </>
+                                                    ) : (
+                                                        <>🔍 රෝගය හඳුනාගන්න</>
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </Col>
+                                        {input.trim() && (
+                                            <Col xs="auto">
+                                                <Button
+                                                    variant="outline-secondary"
+                                                    size="lg"
+                                                    onClick={() => setInput('')}
+                                                    className="py-3"
+                                                    title="Clear text / පෙළ මකන්න"
+                                                >
+                                                    🗑️
+                                                </Button>
+                                            </Col>
+                                        )}
+                                    </Row>
                                 </div>
 
                                 {result && (
