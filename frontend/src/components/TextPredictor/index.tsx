@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { Container, Card, Button, Form, Alert, Row, Col, Spinner, Badge } from 'react-bootstrap';
 import bgimg from '../../assets/bg-img.jpg';
+import { API_ENDPOINTS } from '../../config/api';
 
 const TextDiseasePredictor = () => {
   const [text, setText] = useState('');
@@ -21,9 +22,9 @@ const TextDiseasePredictor = () => {
     try {
       // Check if text contains Sinhala characters
       const isSinhala = /[\u0D80-\u0DFF]/.test(text);
-      const endpoint = isSinhala ? '/sinhala-text-predict' : '/text-predict';
+      const endpoint = isSinhala ? API_ENDPOINTS.SINHALA_TEXT_PREDICT : API_ENDPOINTS.TEXT_PREDICT;
       
-      const response = await axios.post(`http://localhost:5000${endpoint}`, { 
+      const response = await axios.post(endpoint, { 
         input_text: text.trim() 
       });
       setResult(response.data.result);

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import axios from 'axios';
 import { Container, Card, Button, Form, Alert, Row, Col, Spinner, Image } from 'react-bootstrap';
 import bgimg from '../../assets/bg-img.jpg';
+import { API_ENDPOINTS } from '../../config/api';
 
 const ImagePredictor = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -268,7 +269,7 @@ const ImagePredictor = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await axios.post('http://localhost:5000/image-predict', formData, {
+      const response = await axios.post(API_ENDPOINTS.IMAGE_PREDICT, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

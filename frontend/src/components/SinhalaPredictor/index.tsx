@@ -4,6 +4,7 @@ import { Container, Card, Button, Form, Alert, Row, Col, Spinner } from 'react-b
 import bgimg from '../../assets/bg-img.jpg';
 import SinhalaTransliterateInput from '../TranslatorInput';
 import { useNavigate } from 'react-router-dom';
+import { API_ENDPOINTS } from '../../config/api';
 
 const SinhalaPredictor = () => {
     const navigate = useNavigate();
@@ -163,7 +164,7 @@ const SinhalaPredictor = () => {
         setShowLowConfidenceWarning(false); // Reset warning
         setShowCannotIdentify(false); // Reset cannot identify
         try {
-            const res = await axios.post('http://localhost:5000/sinhala-text-predict', {
+            const res = await axios.post(API_ENDPOINTS.SINHALA_TEXT_PREDICT, {
                 input_text: input,
             });
 
